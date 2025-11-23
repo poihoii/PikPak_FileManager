@@ -1,4 +1,4 @@
-# 📦 PikPak Direct Download Helper (Design Remaster v3.4)
+# 📦 PikPak Direct Download Helper
 
 **PikPak 웹 클라이언트의 사용자 경험 향상을 위한 다운로드 도우미 스크립트입니다.**
 
