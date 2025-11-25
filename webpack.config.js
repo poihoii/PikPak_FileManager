@@ -16,7 +16,7 @@ const header = `// ==UserScript==
 // @match          https://mypikpak.com/drive/*
 // @match          https://app.mypikpak.com/*
 // @match          https://drive.mypikpak.com/*
-// @icon           https://github.com/poihoii/PikPak_FileManager/blob/4e5e4e56b1ec1c2d22680f2beef0e5d3c93c25b4/img/logo%20(200).png
+// @icon           https://raw.githubusercontent.com/poihoii/PikPak_FileManager/dev/img/logo%20(200).png
 // @homepage       https://github.com/poihoii/PikPak_FileManager
 // @grant          GM_setClipboard
 // @grant          GM_setValue
