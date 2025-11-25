@@ -137,7 +137,10 @@ async function openManager() {
 
     function setLoad(b) { S.loading = b; UI.loader.style.display = b ? 'flex' : 'none'; if (b) UI.loadTxt.textContent = L.loading_detail; }
     function updateLoadTxt(txt) { if (UI.loadTxt) UI.loadTxt.innerText = txt; }
-    function updateNavState() { UI.btnBack.disabled = false; UI.btnFwd.disabled = S.forward.length === 0; }
+    function updateNavState() {
+        UI.btnBack.disabled = (S.history.length === 0 && S.path.length <= 1);
+        UI.btnFwd.disabled = S.forward.length === 0;
+    }
 
     async function load(isHistoryNav = false) {
         if (S.loading) return;
@@ -250,13 +253,18 @@ async function openManager() {
         UI.crumb.innerHTML = '';
         S.path.forEach((p, i) => {
             const s = document.createElement('span'); s.textContent = p.name; s.className = i === S.path.length - 1 ? 'act' : '';
-            s.onclick = () => { if (i !== S.path.length - 1 && !S.loading) { S.history.push({ path: [...S.path] }); S.path = S.path.slice(0, i + 1); load(); } };
+            s.onclick = () => { if (i !== S.path.length - 1 && !S.loading) { S.history.push({ path: [...S.path] }); S.forward = []; S.path = S.path.slice(0, i + 1); load(); } };
             UI.crumb.appendChild(s); if (i < S.path.length - 1) UI.crumb.appendChild(document.createTextNode(' › '));
         });
     }
 
-    const goBack = () => { if (S.loading) return; if (S.history.length > 0) { const prevState = S.history.pop(); S.path = prevState.path; S.forward = []; load(true); return; } if (S.path.length > 1) { S.forward.push(S.path.pop()); load(true); return; } if (S.path.length === 1 && S.history.length === 0) { if (confirm(L.msg_exit_confirm)) { el.remove(); } } };
-    const goForward = () => { if (S.forward.length > 0 && !S.loading) { S.path.push(S.forward.pop()); load(); } };
+    const goBack = () => {
+        if (S.loading) return;
+        if (S.history.length > 0) { S.forward.push([...S.path]); const prevState = S.history.pop(); S.path = prevState.path; load(true); return; }
+        if (S.path.length > 1) { S.forward.push([...S.path]); S.path = S.path.slice(0, S.path.length - 1); load(true); return; }
+        if (S.path.length === 1 && S.history.length === 0) { if (confirm(L.msg_exit_confirm)) { el.remove(); } }
+    };
+    const goForward = () => { if (S.forward.length > 0 && !S.loading) { S.history.push({ path: [...S.path] }); const nextPath = S.forward.pop(); S.path = nextPath; load(); } };
 
     el.tabIndex = 0; el.focus();
     const keyHandler = (e) => {
@@ -267,9 +275,9 @@ async function openManager() {
         if (e.key === 'F5') { e.preventDefault(); UI.btnRefresh.click(); }
         if (e.key === 'F8') { e.preventDefault(); UI.btnNewFolder.click(); }
         if (e.key === 'Delete') { UI.btnDel.click(); }
-        if (e.key === 'Backspace') { if (!S.scanning) goBack(); }
-        if (e.altKey && e.key === 'ArrowLeft') { e.preventDefault(); goBack(); }
-        if (e.altKey && e.key === 'ArrowRight') { e.preventDefault(); goForward(); }
+        if (e.key === 'Backspace') { e.preventDefault(); if (e.shiftKey) { if (!S.scanning) goForward(); } else { if (!S.scanning) goBack(); } return; }
+        if (e.altKey && e.key === 'ArrowLeft') { e.preventDefault(); goBack(); return; }
+        if (e.altKey && e.key === 'ArrowRight') { e.preventDefault(); goForward(); return; }
         if (e.ctrlKey || e.metaKey) { if (e.key === 'a' || e.key === 'A') { e.preventDefault(); UI.chkAll.click(); } if (e.key === 'c' || e.key === 'C') { e.preventDefault(); UI.btnCopy.click(); } if (e.key === 'x' || e.key === 'X') { e.preventDefault(); UI.btnCut.click(); } if (e.key === 'v' || e.key === 'V') { e.preventDefault(); UI.btnPaste.click(); } }
         if (e.altKey) { if (e.key === 's' || e.key === 'S') { e.preventDefault(); UI.btnSettings.click(); } }
     };
@@ -349,9 +357,12 @@ function inject() {
 
     const savedLeft = GM_getValue('pk_pos_left', null);
     const savedTop = GM_getValue('pk_pos_top', null);
-    if (savedLeft && savedTop) {
-        b.style.bottom = 'auto'; b.style.right = 'auto';
-        b.style.left = savedLeft; b.style.top = savedTop;
+
+    if (savedLeft !== null && savedTop !== null) {
+        b.style.bottom = 'auto';
+        b.style.right = 'auto';
+        b.style.left = savedLeft;
+        b.style.top = savedTop;
     }
 
     let isDragging = false;

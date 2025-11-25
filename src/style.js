@@ -6,34 +6,38 @@ export const CSS = `
     .pk-hd { height: 48px; border-bottom: 1px solid var(--pk-bd); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; background: var(--pk-bg); }
     .pk-tt { font-weight: 700; font-size: 20px; display: flex; align-items: center; gap: 10px; }
     .pk-tb { padding: 8px 16px; border-bottom: 1px solid var(--pk-bd); display: flex; gap: 8px; align-items: center; background: var(--pk-bg); height: 40px; }
-    
+
     .pk-btn { height: 32px; padding: 0 12px; border-radius: 4px; border: 1px solid transparent; background: transparent; color: var(--pk-fg); cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 6px; transition: background 0.1s; position: relative; font-weight: 500; white-space: nowrap; flex-shrink: 0; }
     .pk-btn:hover:not(:disabled) { background: var(--pk-btn-hov); }
     .pk-btn:disabled { opacity: 0.4; cursor: default; pointer-events: none; }
     .pk-btn.pri { color: var(--pk-pri); font-weight: 600; }
     .pk-btn svg { width: 16px; height: 16px; flex-shrink: 0; display: block; vertical-align: middle; }
     .pk-btn span { white-space: nowrap; transition: opacity 0.2s; }
-    
+
+    /* Responsive: Switch to Icon-only mode on narrow screens */
     @media (max-width: 1200px) {
         .pk-btn span { display: none; }
         .pk-btn { padding: 0 8px; }
         .pk-dup-lbl { display: none; }
     }
-    
+
+    /* Unified Duplicate Toolbar Style (Updated) */
     .pk-dup-toolbar { display:none; align-items:center; gap:4px; padding:0 8px; height:100%; margin-left:8px; overflow-x: auto; scrollbar-width: none; background: transparent; border: none; }
     .pk-dup-lbl { font-weight: 500; color: var(--pk-fg); font-size: 13px; margin-right: 6px; opacity: 0.8; white-space: nowrap; flex-shrink: 0; }
     .pk-btn-toggle { border: 1px solid var(--pk-bd); background: var(--pk-bg); color: var(--pk-fg); height: 30px; border-radius: 4px; padding: 0 10px; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; flex-shrink: 0; }
     .pk-btn-toggle:hover { background: var(--pk-btn-hov); border-color: var(--pk-pri); }
     .pk-btn-toggle span { font-weight: 700; color: var(--pk-pri); }
-    
+
+    /* Navigation Bar Fix */
     .pk-nav { display: flex; align-items: center; gap: 4px; overflow: hidden; white-space: nowrap; font-size: 13px; color: #666; margin: 0 8px; max-width: 60%; }
     .pk-nav span { cursor: pointer; padding: 2px 6px; border-radius: 4px; } .pk-nav span:hover { background: var(--pk-hl); color: var(--pk-fg); }
     .pk-nav span.act { font-weight: 600; color: var(--pk-fg); cursor: default; }
-    
+
+    /* Group Header Style - Updated for Better Visibility and Grey Tags */
     .pk-group-hd { background: var(--pk-gh); color: var(--pk-gh-fg); font-weight: bold; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--pk-bd); border-top: 1px solid var(--pk-bd); margin-top: -1px; min-height: 32px; }
     .pk-group-hd .pk-tag { margin-left: auto; background: #666; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; border: 1px solid #555; }
     .pk-group-hd .pk-cnt { margin-left: 10px; color: var(--pk-fg); font-size: 12px; opacity: 0.9; }
-    
+
     .pk-loading-ov { position: absolute; inset: 0; background: rgba(255,255,255,0.8); z-index: 999; display: none; flex-direction: column; align-items: center; justify-content: center; color: var(--pk-fg); gap: 20px; backdrop-filter: blur(2px); }
     @media (prefers-color-scheme: dark) { .pk-loading-ov { background: rgba(0,0,0,0.8); } }
     .pk-spin-lg { width: 48px; height: 48px; border: 5px solid rgba(128,128,128,0.2); border-top-color: var(--pk-pri); border-radius: 50%; animation: spin 0.8s infinite; }
@@ -54,6 +58,7 @@ export const CSS = `
     .pk-grp { display: flex; gap: 8px; }
     .pk-pop { position: fixed; pointer-events: none; z-index: 10002; background: #000; border: 1px solid #333; box-shadow: 0 8px 24px rgba(0,0,0,0.4); border-radius: 6px; display: none; overflow: hidden; }
     .pk-pop img { display: block; max-width: 320px; max-height: 240px; object-fit: contain; }
+    /* Dup Visuals - Removed old row styles */
     .pk-ctx { position: fixed; z-index: 10003; background: var(--pk-bg); border: 1px solid var(--pk-bd); border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); min-width: 150px; padding: 4px 0; display: none; }
     .pk-ctx-item { padding: 8px 16px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: var(--pk-fg); }
     .pk-ctx-item:hover { background: var(--pk-hl); }
@@ -65,7 +70,7 @@ export const CSS = `
     .pk-field input, .pk-field select { padding: 6px; border: 1px solid var(--pk-bd); border-radius: 4px; background: var(--pk-bg); color: var(--pk-fg); }
     .pk-modal-act { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
     .pk-credit { font-size: 12px; color: #888; text-align: center; margin-top: 20px; border-top: 1px solid var(--pk-bd); padding-top: 10px; }
-    .pk-credit a { color: #888; text-decoration: none; }
+    .pk-credit a { color: #888; text-decoration: none; } /* Changed to Gray */
     .pk-credit a:hover { text-decoration: underline; }
     .pk-prev-list { flex: 1; overflow-y: auto; border: 1px solid var(--pk-bd); max-height: 300px; }
     .pk-prev-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 5px 10px; border-bottom: 1px solid var(--pk-bd); font-size: 12px; }

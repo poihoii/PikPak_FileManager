@@ -1,6 +1,6 @@
 import { sleep } from './utils';
 
-function getHeaders() {
+export function getHeaders() {
     let token = '', captcha = '';
     for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
@@ -42,5 +42,3 @@ export async function apiAction(action, data) {
     }
     return res.json();
 }
-
-export { getHeaders }; // Exporting strictly needed helper if accessed directly
