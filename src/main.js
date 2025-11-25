@@ -4,14 +4,21 @@ import { getStrings, getLang } from './languages';
 import { sleep, esc, fmtSize, fmtDate, fmtDur } from './utils';
 import { apiList, apiGet, apiAction, getHeaders } from './api';
 
+<<<<<<< HEAD
 console.log("🚀 PikPak Script: LOADED from main.js");
 
+=======
+>>>>>>> f5e0bab (Overall improvements to script functions)
 const L = getStrings();
 const lang = getLang();
 
 async function openManager() {
     if (document.querySelector('.pk-ov')) return;
 
+<<<<<<< HEAD
+=======
+    // --- State Management ---
+>>>>>>> f5e0bab (Overall improvements to script functions)
     const S = {
         path: [{ id: '', name: '🏠 Home' }],
         history: [],
@@ -29,6 +36,10 @@ async function openManager() {
     };
 
     const el = document.createElement('div'); el.className = 'pk-ov';
+<<<<<<< HEAD
+=======
+    // --- HTML Template (imports CSS & Icons from config/style) ---
+>>>>>>> f5e0bab (Overall improvements to script functions)
     el.innerHTML = `
         <style>${CSS}</style>
         <div class="pk-win">
@@ -132,6 +143,7 @@ async function openManager() {
     };
 
     function showModal(html) {
+<<<<<<< HEAD
         const m = document.createElement('div'); m.className = 'pk-modal-ov'; m.innerHTML = `<div class="pk-modal">${html}</div>`; UI.win.appendChild(m); return m;
     }
 
@@ -139,6 +151,22 @@ async function openManager() {
     function updateLoadTxt(txt) { if (UI.loadTxt) UI.loadTxt.innerText = txt; }
     function updateNavState() { UI.btnBack.disabled = false; UI.btnFwd.disabled = S.forward.length === 0; }
 
+=======
+        const m = document.createElement('div');
+        m.className = 'pk-modal-ov';
+        m.innerHTML = `<div class="pk-modal">${html}</div>`;
+        UI.win.appendChild(m);
+        return m;
+    }
+
+    // --- Navigation & Core Logic (Copied from v8.7.0, shortened here for brevity but you paste the FULL logic) ---
+    // (이 부분에 v8.7.0 코드의 load(), refresh(), renderList() 등 모든 함수를 붙여넣으세요.)
+    // (단, apiList 등은 위에서 import 했으므로 그대로 사용하면 됩니다.)
+
+    // ... (logic from v8.7.0) ...
+
+    // 이 예시에서는 핵심 함수 일부만 포함합니다. 실제 파일에는 v8.7.0의 openManager 내부 함수 전체가 필요합니다.
+>>>>>>> f5e0bab (Overall improvements to script functions)
     async function load(isHistoryNav = false) {
         if (S.loading) return;
         setLoad(true);
@@ -158,6 +186,7 @@ async function openManager() {
         el.focus();
     }
 
+<<<<<<< HEAD
     async function refresh() {
         S.display = [...S.items];
         S.dupReasons.clear(); S.dupGroups.clear();
@@ -322,10 +351,17 @@ async function openManager() {
     ctx.querySelector('#ctx-del').onclick = () => { ctx.style.display = 'none'; UI.btnDel.click(); };
     UI.btnClose.addEventListener('click', () => { el.remove(); document.removeEventListener('keydown', keyHandler); document.removeEventListener('mouseup', mouseHandler); });
 
+=======
+    // ... (나머지 함수들: refresh, renderList, goBack, playVideo 등등 v8.7.0에서 복사) ...
+    // 주의: v8.7.0 코드에서 openManager() 안에 있던 모든 함수를 여기에 넣어야 합니다.
+
+    // Initial Call
+>>>>>>> f5e0bab (Overall improvements to script functions)
     updateStat();
     load();
 }
 
+<<<<<<< HEAD
 function tryInject() {
     console.log("🚀 PikPak Script: Attempting inject...");
     if (document.getElementById('pk-launch')) {
@@ -341,6 +377,8 @@ function tryInject() {
     console.log("🚀 PikPak Script: INJECT SUCCESS!");
 }
 
+=======
+>>>>>>> f5e0bab (Overall improvements to script functions)
 function inject() {
     if (document.getElementById('pk-launch')) return;
     const b = document.createElement('button'); b.id = 'pk-launch';
@@ -394,6 +432,7 @@ function inject() {
     };
 
     document.body.appendChild(b);
+<<<<<<< HEAD
     console.log("🚀 Button Created!");
 }
 
@@ -405,3 +444,9 @@ const obs = new MutationObserver(() => {
     }
 });
 obs.observe(document.body, { childList: true, subtree: true });
+=======
+}
+
+inject();
+const obs = new MutationObserver(inject); obs.observe(document.body, { childList: true, subtree: true });
+>>>>>>> f5e0bab (Overall improvements to script functions)
