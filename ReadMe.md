@@ -1,60 +1,106 @@
-# 📦 PikPak Direct Download Helper
+<p align="center">
+ <img src="https://raw.githubusercontent.com/poihoii/PikPak_FileManager/refs/heads/dev/img/main_screenshot.png" width=750px alt="main"></p>
+<br>
 
-**PikPak 웹 클라이언트의 사용자 경험 향상을 위한 다운로드 도우미 스크립트입니다.**
-
-기존의 클라이언트 기반 다운로드 방식을 개선하여, 보다 직관적으로 **웹에서 파일을 다운** 받을 수 있도록 하고, **폴더 내부의 파일까지 한 번에 추출**하며, **IDM/Aria2** 사용자를 위한 링크 복사 기능까지 제공합니다. 
+# <img src="https://raw.githubusercontent.com/poihoii/PikPak_FileManager/dev/img/logo%20(200).svg" width=33px alt="로고"> PikPak File Manager (PikPak 파일 관리자)
 
 <br>
 
-## ✨ 주요 기능 (Key Features)
+![Author](https://img.shields.io/badge/author-poihoii-orange)
+![Version](https://img.shields.io/badge/version-1.0-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-### 1. 🚀 다이렉트 다운로드 & 링크 추출
-- **사이드바 통합 버튼**: PikPak 원본 디자인을 해치지 않는 완벽한 스타일의 '다이렉트 다운로드' 버튼을 사이드바에 추가합니다.
-- **모바일 지원**: 화면이 좁은 모바일 환경에서는 **플로팅 버튼(FAB)**으로 자동 변환되어 어디서든 쉽게 접근할 수 있습니다.
-- **링크 복사**: 외부 다운로더(IDM, JDownloader 등) 사용자를 위해 선택한 파일의 **직접 링크(Direct Link)**만 클립보드로 빠르게 추출합니다.
+**PikPak 웹 클라이언트의 사용자 경험 향상을 위한 파일 관리 스크립트입니다.**
 
-### 2. 📂 강력한 폴더 재귀(Recursive) 탐색
-- 폴더를 선택하고 다운로드를 누르면, **폴더 내부에 있는 모든 하위 파일**을 자동으로 탐색하여 링크를 추출합니다.
-- 일일이 폴더에 들어갈 필요 없이, 상위 폴더 선택 한 번으로 해결하세요.
+기존의 PikPak 웹 버전 환경를 개선하고자 Tampermonkey를 이용하여 파일 관리에 도움이 되는 여러 기능을  UserScript로 구현하였습니다.
 
-### 3. 🛠️ 부가 기능
-- 메인 파일 목록의 파일명 옆에 부가적인 도구 버튼을 추가합니다.
-    - `🆔`: 파일의 고유 ID를 클립보드에 복사합니다.
-    - `🔍`: 파일명을 기반으로 구글 검색을 새 탭으로 엽니다.
+<br>
+
+### 🌍 Languages : [한국어](https://raw.githubusercontent.com/poihoii/PikPak_FileManager/refs/heads/main/ReadMe.md) | [English](https://raw.githubusercontent.com/poihoii/PikPak_FileManager/refs/heads/main/user.js/ReadMe(En).md) | [中文 (简体)](https://raw.githubusercontent.com/poihoii/PikPak_FileManager/refs/heads/main/user.js/ReadMe(Zh).md) | [日本語](https://raw.githubusercontent.com/poihoii/PikPak_FileManager/refs/heads/main/user.js/ReadMe(Ja).md)
+
+<br>
+
+
+<br>
+
+## ✨ 주요 기능 (Features)
+
+### 🖥️ 데스크탑 스타일 UI
+- **리스트 뷰**: 윈도우 탐색기와 유사한 직관적인 리스트 디자인을 제공합니다.
+- **다크 모드**: 시스템 테마에 맞춰 눈이 편안한 다크 모드를 자동으로 지원합니다.
+- **상태 표시**: 선택한 파일 수, 로딩 상태 등을 실시간으로 확인할 수 있습니다.
+<br>
+
+### 📂 고급 파일 관리
+- **구조 평면화 (Flatten)**: 하위 폴더에 숨겨진 모든 파일을 검색하여 **하나의 목록**으로 평면화합니다.
+- **중복 파일 정리**: 해시(Hash), 파일명, 재생 시간 등을 비교하여 중복된 파일을 찾아냅니다.
+- **스마트 정리**: 용량이나 날짜를 기준으로 삭제할 파일을 자동으로 선택해주는 도구를 포함합니다.
+<br>
+
+### ✏️ 일괄 이름 변경
+- **패턴 변경**: `Video {n}` 과 같은 패턴을 사용하여 파일 이름을 한 번에 정리할 수 있습니다.
+- **문자열 치환**: 수백 개의 파일 이름에서 특정 단어를 찾아 바꾸거나 삭제할 수 있습니다.
+<br>
+
+### 🚀 다운로드 및 재생
+- **Aria2 연동**: 로컬 Aria2 RPC 서버로 다운로드 작업을 직접 전송합니다.
+- **IDM 지원**: Internet Download Manager용 내보내기 파일(`.ef2`)을 생성합니다.
+- **스트리밍 재생**: **PotPlayer**, **VLC** 등 외부 플레이어로 영상을 즉시 재생합니다.
+- **재생 목록**: 선택한 영상들로 `.m3u` 플레이리스트 파일을 생성합니다.
+<br>
+
+### 📌 그 밖의 단축키, 썸네일 및 프리뷰 등 편의 기능
+
+<br>
+
+
+<br>
+
+## ⌨️ 단축키 (Hotkeys)
+
+
+| 키 (Key) | 동작 (Action) | 키 (Key) | 동작 (Action) |
+| :--- | :--- | :--- | :--- |
+| **Alt + ←** or **Backspace** 	| 이전 페이지 (마우스 4번 키) | **Alt + →** | 다음 페이지 (마우스 5번 키) |
+| **F5** | 목록 새로고침 | **F8** | 새 폴더 만들기 |
+| **F2** | 파일명 변경 or 일괄 변경 | **Delete** | 선택 항목 휴지통으로 이동 |
+| **Ctrl + A** | 전체 선택 | **Ctrl + C** or **+ X** or **+ V**  | 복사 / 잘라내기 / 붙여넣기 |
+| **Alt + S** | 설정 열기 | **Esc** | 선택 해제 / 팝업 닫기 |
+
+<br>
+
+
 <br>
 
 ## 📥 설치 방법 (Installation)
 
 본 스크립트는 Tampermonkey를 기반으로 하고 있습니다.
 
-저장소에 게시된 스크립트 코드를 직접 적용하거나 또는 [GreaslyFork](https://greasyfork.org/ko/scripts/556685-pikpak-direct-download-helper)에서 스크립트를 다운 받아 사용하실 수 있습니다.
+저장소에 게시된 스크립트 코드를 직접 적용하거나 또는 [GreaslyFork](https://greasyfork.org/ko/scripts/556685-pikpak-%ED%8C%8C%EC%9D%BC-%EA%B4%80%EB%A6%AC%EC%9E%90)에서 스크립트를 다운 받아 사용하실 수 있습니다.
 
 1. 브라우저 확장 프로그램 **[Tampermonkey](https://www.tampermonkey.net/)**를 설치합니다. (Chrome, Edge, Firefox 지원)
 2. Tampermonkey 대시보드에서 `+` 버튼(새 스크립트 추가)을 클릭합니다.
-3. 제공된 `user.js` 코드를 전체 복사하여 붙여넣습니다.
-4. `Ctrl + S`를 눌러 저장합니다.
-5. [PikPak 웹사이트](https://mypikpak.com)에 접속하면 자동으로 적용됩니다.
+3. 제공된 `user.js` 코드를 전체 복사하여 붙여넣고, `Ctrl + S`를 눌러 저장합니다.
+4. [PikPak 웹사이트](https://mypikpak.com) 접속 후 우측 하단의 **플로팅 버튼**을 클릭하면 관리자가 실행됩니다.
+
 <br>
 
-## 🖥️ 사용 가이드 (Usage)
 
-1. **다운로드 창 열기**
-    - **PC**: 왼쪽 사이드바의 '클라우드 다운로드' 버튼 아래에 생성된 **[다이렉트 다운로드]** 버튼을 클릭합니다.
-    - **모바일**: 화면 우측 하단에 떠 있는 **파란색 다운로드 아이콘**을 터치합니다.
-
-2. **파일 선택**
-    - 리스트에서 원하는 파일이나 폴더를 클릭하여 선택합니다. (다중 선택 가능)
-    - 상단의 정렬 필터를 사용하여 이름/크기/날짜순으로 정렬할 수 있습니다.
-    - 폴더 이름을 더블 클릭하거나 화살표 아이콘을 누르면 내부로 진입합니다.
-
-3. **다운로드 실행**
-    - **[다운로드]**: 브라우저를 통해 파일을 즉시 다운로드합니다.
-    - **[링크 복사]**: 선택한 파일들의 다운로드 주소를 클립보드에 복사합니다. (외부 다운로더 사용 시 추천)
 <br>
 
-## ⚠️ 주의 사항 (Note)
-- **API 제한**: 폴더 재귀 탐색 기능은 파일 개수가 매우 많을 경우 API 호출 제한에 걸릴 수 있으므로, 적절히 나누어 다운로드하는 것을 권장합니다.
-- **브라우저 팝업**: [다운로드] 버튼 사용 시 브라우저가 **팝업 차단**을 할 수 있습니다. PikPak 사이트에 대해 팝업을 허용해주세요.
-<br>
+## 🛠️ 개발 (Development)
 
-**License**: MIT
+본 스크립트는 각 기능별 **모듈화(Modularized)**하여 분리 작성된 후 하나의 스크립트로 통합 빌드 되었습니다.
+
+```bash
+# 1. 저장소 클론
+git clone [https://github.com/poihoii/PikPak_FileManager.git](https://github.com/poihoii/PikPak_FileManager.git)
+
+# 2. 의존성 설치
+npm install
+
+# 3. 개발 시 실시간 빌드 테스트
+npm run dev
+
+# 4. 최종 빌드 (배포용)
+npm run build
