@@ -15,6 +15,8 @@
 // @match          https://drive.mypikpak.com/*
 // @icon           https://github.com/poihoii/PikPak_FileManager/blob/4e5e4e56b1ec1c2d22680f2beef0e5d3c93c25b4/img/logo%20(200).png
 // @homepage       https://github.com/poihoii/PikPak_FileManager
+// @downloadURL    https://update.greasyfork.org/scripts/556685/PikPak%20%ED%8C%8C%EC%9D%BC%20%EA%B4%80%EB%A6%AC%EC%9E%90.user.js
+// @updateURL      https://update.greasyfork.org/scripts/556685/PikPak%20%ED%8C%8C%EC%9D%BC%20%EA%B4%80%EB%A6%AC%EC%9E%90.meta.js
 // @grant          GM_setClipboard
 // @grant          GM_setValue
 // @grant          GM_getValue
