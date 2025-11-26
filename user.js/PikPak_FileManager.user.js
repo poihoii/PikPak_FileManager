@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name           PikPak 파일 관리자
 // @name:en        PikPak File Manager
-// @name:zh        PikPak 文件管理器
+// @name:zh_CN     PikPak 文件管理器
 // @name:ja        PikPak ファイルマネージャー
 // @namespace      https://github.com/poihoii/
 // @version        1.0
 // @description    PikPak 웹 드라이브를 확장해 빠른 탐색·중복 검사·파일명 일괄 변경·다운로드 기능을 제공하는 고급 파일 관리자.
 // @description:en Enhances PikPak with fast navigation, duplicate scan, bulk rename, and advanced file-management tools.
-// @description:zh 基于 PikPak 网页 API，提供快速浏览、重复文件扫描、批量重命名和高级下载功能的文件管理器。
+// @description:zh_CN 基于 PikPak 网页 API，提供快速浏览、重复文件扫描、批量重命名和高级下载功能的文件管理器。
 // @description:ja PikPak を拡張し、高速ナビゲーション・重複検出・一括リネーム・ダウンロード機能を備えた高機能ファイルマネージャーです。
 // @author         poihoii
 // @match          https://mypikpak.com/drive/*
