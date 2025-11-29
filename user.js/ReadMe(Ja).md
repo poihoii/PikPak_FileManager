@@ -16,7 +16,7 @@
 
 <br>
 
-### 🌍 Languages : [한국어](https://raw.githubusercontent.com/poihoii/PikPak_FileManager/refs/heads/main/ReadMe.md) | [English](https://raw.githubusercontent.com/poihoii/PikPak_FileManager/refs/heads/main/user.js/ReadMe(En).md) | [中文 (简体)](https://raw.githubusercontent.com/poihoii/PikPak_FileManager/refs/heads/main/user.js/ReadMe(Zh).md) | [日本語](https://raw.githubusercontent.com/poihoii/PikPak_FileManager/refs/heads/main/user.js/ReadMe(Ja).md)
+### 🌍 対応言語 (Languages) : [한국어](https://github.com/poihoii/PikPak_FileManager/blob/main/ReadMe.md) | [English](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(En).md) | [中文 (简体)](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(Zn).md) | [日本語](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(Ja).md)
 
 <br>
 
