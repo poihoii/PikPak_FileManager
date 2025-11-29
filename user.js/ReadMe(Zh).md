@@ -7,7 +7,7 @@
 <br>
 
 ![Author](https://img.shields.io/badge/author-poihoii-orange)
-![Version](https://img.shields.io/badge/version-1.0-blue)
+![Version](https://img.shields.io/badge/version-1.2.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 **旨在提升 PikPak 网页客户端用户体验的文件管理脚本。**
@@ -16,7 +16,7 @@
 
 <br>
 
-### 🌍 支持的语言 (Languages) : [한국어](https://github.com/poihoii/PikPak_FileManager/blob/main/ReadMe.md) | [English](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(En).md) | [中文 (简体)](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(Zh).md) | [日本語](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(Ja).md)
+### 🌍 支持的语言 (Languages) : [한국어](https://github.com/poihoii/PikPak_FileManager/blob/main/ReadMe.md) | [English](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(En).md) | [中文 (简体)](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(Zn).md) | [日本語](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(Ja).md)
 
 <br>
 
@@ -28,6 +28,7 @@
 ### 🖥️ 桌面风格 UI
 - **列表视图**: 提供类似于 Windows 资源管理器的直观列表设计。
 - **深色模式**: 自动支持与系统主题相匹配的深色模式，保护视力。
+- **响应式布局**: 根据窗口大小优化界面显示（支持最小宽度 480px）。
 - **状态显示**: 实时确认选中文件数量、加载状态等信息。
 <br>
 
@@ -43,13 +44,13 @@
 <br>
 
 ### 🚀 下载与播放
-- **Aria2 集成**: 将下载任务直接发送到本地 Aria2 RPC 服务器。
+- **Aria2 集成**: 将下载任务直接发送到本地 Aria2 RPC 服务器。（支持连接测试及 Token 隐藏输入）
 - **IDM 支持**: 生成 Internet Download Manager 专用导出文件 (`.ef2`)。
 - **流媒体播放**: 使用 **PotPlayer**、**VLC** 等外部播放器即时播放视频。
 - **播放列表**: 为选中的视频生成 `.m3u` 播放列表文件。
 <br>
 
-### 📌 其他快捷键、缩略图及预览等便捷功能
+### 📌 其他快捷键、SVG 图标及自定义弹窗等便捷功能
 
 <br>
 

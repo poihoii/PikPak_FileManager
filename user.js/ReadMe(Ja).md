@@ -7,7 +7,7 @@
 <br>
 
 ![Author](https://img.shields.io/badge/author-poihoii-orange)
-![Version](https://img.shields.io/badge/version-1.0-blue)
+![Version](https://img.shields.io/badge/version-1.2.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 **PikPak Webクライアントのユーザー体験を向上させるためのファイル管理スクリプトです。**
@@ -16,7 +16,7 @@
 
 <br>
 
-### 🌍 対応言語 (Languages) : [한국어](https://github.com/poihoii/PikPak_FileManager/blob/main/ReadMe.md) | [English](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(En).md) | [中文 (简体)](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(Zh).md) | [日本語](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(Ja).md)
+### 🌍 対応言語 (Languages) : [한국어](https://github.com/poihoii/PikPak_FileManager/blob/main/ReadMe.md) | [English](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(En).md) | [中文 (简体)](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(Zn).md) | [日本語](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(Ja).md)
 
 <br>
 
@@ -28,6 +28,7 @@
 ### 🖥️ デスクトップスタイル UI
 - **リストビュー**: Windowsエクスプローラーに似た直感的なリストデザインを提供します。
 - **ダークモード**: システムテーマに合わせて目に優しいダークモードを自動的にサポートします。
+- **レスポンシブレイアウト**: ウィンドウサイズに合わせて画面を最適化します（最小幅480px対応）。
 - **ステータス表示**: 選択されたファイル数、読み込み状態などをリアルタイムで確認できます。
 <br>
 
@@ -43,13 +44,13 @@
 <br>
 
 ### 🚀 ダウンロードと再生
-- **Aria2 連携**: ローカルAria2 RPCサーバーへダウンロードタスクを直接送信します。
+- **Aria2 連携**: ローカルAria2 RPCサーバーへダウンロードタスクを直接送信します。（接続テストおよびトークン保護入力対応）
 - **IDM サポート**: Internet Download Manager用のエクスポートファイル (`.ef2`) を生成します。
 - **ストリーミング再生**: **PotPlayer**、**VLC** などの外部プレーヤーで動画を即座に再生します。
 - **プレイリスト**: 選択した動画で `.m3u` プレイリストファイルを生成します。
 <br>
 
-### 📌 その他ショートカットキー、サムネイル、プレビューなどの便利機能
+### 📌 その他ショートカットキー、SVGアイコン、カスタムモーダルなどの便利機能
 
 <br>
 

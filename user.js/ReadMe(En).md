@@ -7,7 +7,7 @@
 <br>
 
 ![Author](https://img.shields.io/badge/author-poihoii-orange)
-![Version](https://img.shields.io/badge/version-1.0-blue)
+![Version](https://img.shields.io/badge/version-1.2.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 **A file management script to enhance the user experience of the PikPak Web Client.**
@@ -16,7 +16,7 @@ To improve the existing PikPak web environment, various file management features
 
 <br>
 
-### 🌍 Supported Languages : [한국어](https://github.com/poihoii/PikPak_FileManager/blob/main/ReadMe.md) | [English](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(En).md) | [中文 (简体)](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(Zh).md) | [日本語](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(Ja).md)
+### 🌍 Supported Languages : [한국어](https://github.com/poihoii/PikPak_FileManager/blob/main/ReadMe.md) | [English](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(En).md) | [中文 (简体)](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(Zn).md) | [日本語](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(Ja).md)
 
 <br>
 
@@ -27,7 +27,8 @@ To improve the existing PikPak web environment, various file management features
 
 ### 🖥️ Desktop Style UI
 - **List View**: Provides an intuitive list design similar to Windows Explorer.
-- **Dark Mode**: Automatically supports a dark mode that matches your system theme and is easy on the eyes.
+- **Dark Mode**: Automatically supports a dark mode that matches your system theme.
+- **Responsive Layout**: Optimizes the interface for various window sizes (Supports min-width 480px).
 - **Status Display**: Real-time verification of selected file counts, loading status, and more.
 <br>
 
@@ -43,13 +44,13 @@ To improve the existing PikPak web environment, various file management features
 <br>
 
 ### 🚀 Download & Play
-- **Aria2 Integration**: Send download tasks directly to a local Aria2 RPC server.
+- **Aria2 Integration**: Send download tasks directly to a local Aria2 RPC server. (Includes connection test & secure token input)
 - **IDM Support**: Generates export files (`.ef2`) for Internet Download Manager.
 - **Streaming Play**: Instantly play videos using external players like **PotPlayer** or **VLC**.
 - **Playlist**: Generates `.m3u` playlist files for selected videos.
 <br>
 
-### 📌 Other convenience features like Hotkeys, Thumbnails, and Previews
+### 📌 Other convenience features like Hotkeys, SVG Icons, and Custom Modals
 
 <br>
 

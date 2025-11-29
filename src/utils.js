@@ -16,3 +16,13 @@ export const fmtDur = s => {
     const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sc = s % 60;
     return (h > 0 ? h + ':' : '') + String(m).padStart(2, '0') + ':' + String(sc).padStart(2, '0');
 };
+
+// [추가] GM 함수 안전 래퍼
+export function gmGet(key, def) {
+    if (typeof GM_getValue !== 'undefined') return GM_getValue(key, def);
+    return def;
+}
+
+export function gmSet(key, val) {
+    if (typeof GM_setValue !== 'undefined') GM_setValue(key, val);
+}

@@ -7,7 +7,7 @@
 <br>
 
 ![Author](https://img.shields.io/badge/author-poihoii-orange)
-![Version](https://img.shields.io/badge/version-1.0-blue)
+![Version](https://img.shields.io/badge/version-1.2.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 **PikPak 웹 클라이언트의 사용자 경험 향상을 위한 파일 관리 스크립트입니다.**
@@ -16,7 +16,7 @@
 
 <br>
 
-### 🌍 지원 언어 (Languages) : [한국어](https://github.com/poihoii/PikPak_FileManager/blob/main/ReadMe.md) | [English](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(En).md) | [中文 (简体)](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(Zh).md) | [日本語](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(Ja).md)
+### 🌍 지원 언어 (Languages) : [한국어](https://github.com/poihoii/PikPak_FileManager/blob/main/ReadMe.md) | [English](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(En).md) | [中文 (简体)](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(Zn).md) | [日本語](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(Ja).md)
 
 <br>
 
@@ -28,6 +28,7 @@
 ### 🖥️ 데스크탑 스타일 UI
 - **리스트 뷰**: 윈도우 탐색기와 유사한 직관적인 리스트 디자인을 제공합니다.
 - **다크 모드**: 시스템 테마에 맞춰 눈이 편안한 다크 모드를 자동으로 지원합니다.
+- **반응형 레이아웃**: 창 크기에 따라 최적화된 화면을 제공합니다. (최소 너비 480px 지원)
 - **상태 표시**: 선택한 파일 수, 로딩 상태 등을 실시간으로 확인할 수 있습니다.
 <br>
 
@@ -43,7 +44,7 @@
 <br>
 
 ### 🚀 다운로드 및 재생
-- **Aria2 연동**: 로컬 Aria2 RPC 서버로 다운로드 작업을 직접 전송합니다.
+- **Aria2 연동**: 로컬 Aria2 RPC 서버로 다운로드 작업을 직접 전송합니다. (연결 테스트 및 토큰 보안 입력 지원)
 - **IDM 지원**: Internet Download Manager용 내보내기 파일(`.ef2`)을 생성합니다.
 - **스트리밍 재생**: **PotPlayer**, **VLC** 등 외부 플레이어로 영상을 즉시 재생합니다.
 - **재생 목록**: 선택한 영상들로 `.m3u` 플레이리스트 파일을 생성합니다.
@@ -61,10 +62,10 @@
 
 | 키 (Key) | 동작 (Action) | 키 (Key) | 동작 (Action) |
 | :--- | :--- | :--- | :--- |
-| **Alt + ←** or **Backspace** 	| 이전 페이지 (마우스 4번 키) | **Alt + →** | 다음 페이지 (마우스 5번 키) |
+| **Alt + ←** or **Backspace** | 이전 페이지 (마우스 4번 키) | **Alt + →** | 다음 페이지 (마우스 5번 키) |
 | **F5** | 목록 새로고침 | **F8** | 새 폴더 만들기 |
 | **F2** | 파일명 변경 or 일괄 변경 | **Delete** | 선택 항목 휴지통으로 이동 |
-| **Ctrl + A** | 전체 선택 | **Ctrl + C** or **+ X** or **+ V**  | 복사 / 잘라내기 / 붙여넣기 |
+| **Ctrl + A** | 전체 선택 | **Ctrl + C** or **+ X** or **+ V** | 복사 / 잘라내기 / 붙여넣기 |
 | **Alt + S** | 설정 열기 | **Esc** | 선택 해제 / 팝업 닫기 |
 
 <br>
