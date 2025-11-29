@@ -4,21 +4,14 @@ import { getStrings, getLang } from './languages';
 import { sleep, esc, fmtSize, fmtDate, fmtDur } from './utils';
 import { apiList, apiGet, apiAction, getHeaders } from './api';
 
-<<<<<<< HEAD
 console.log("🚀 PikPak Script: LOADED from main.js");
 
-=======
->>>>>>> f5e0bab (Overall improvements to script functions)
 const L = getStrings();
 const lang = getLang();
 
 async function openManager() {
     if (document.querySelector('.pk-ov')) return;
 
-<<<<<<< HEAD
-=======
-    // --- State Management ---
->>>>>>> f5e0bab (Overall improvements to script functions)
     const S = {
         path: [{ id: '', name: '🏠 Home' }],
         history: [],
@@ -32,17 +25,14 @@ async function openManager() {
         clipItems: [], clipType: '',
         clipSourceParentId: null,
         loading: false,
-        lastSelIdx: -1
+        lastSelIdx: -1,
+        search: ''
     };
 
     const el = document.createElement('div'); el.className = 'pk-ov';
-<<<<<<< HEAD
-=======
-    // --- HTML Template (imports CSS & Icons from config/style) ---
->>>>>>> f5e0bab (Overall improvements to script functions)
     el.innerHTML = `
         <style>${CSS}</style>
-        <div class="pk-win">
+        <div class="pk-win pk-lang-${lang}">
             <div class="pk-loading-ov" id="pk-loader">
                 <div class="pk-spin-lg"></div>
                 <div class="pk-loading-txt" id="pk-load-txt">${L.loading_detail}</div>
@@ -54,6 +44,7 @@ async function openManager() {
                     ${L.title}
                 </div>
                 <div style="display:flex;gap:4px;">
+                    <div class="pk-btn" id="pk-help" style="width:32px;padding:0;justify-content:center;" title="${L.tip_help}">${CONF.icons.help}</div>
                     <div class="pk-btn" id="pk-settings" style="width:32px;padding:0;justify-content:center;" title="${L.tip_settings}">${CONF.icons.settings}</div>
                     <div class="pk-btn" id="pk-close" style="width:32px;padding:0;justify-content:center;">${CONF.icons.close}</div>
                 </div>
@@ -61,6 +52,10 @@ async function openManager() {
             <div class="pk-tb">
                 <div class="pk-nav" id="pk-crumb"></div>
                 <div style="flex:1"></div>
+                <div class="pk-search">
+                    <input type="text" id="pk-search-input" placeholder="${L.placeholder_search}" title="${L.tip_search}" autocomplete="off">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </div>
                 <div class="pk-dup-toolbar" id="pk-dup-tools">
                     <span class="pk-dup-lbl">${L.lbl_dup_tool}</span>
                     <button class="pk-btn-toggle" id="pk-dup-size" title="${L.tip_toggle_size}">
@@ -77,15 +72,15 @@ async function openManager() {
                 <button class="pk-btn" id="pk-nav-back" title="${L.tip_back}">${CONF.icons.back}<span>${L.btn_back}</span></button>
                 <button class="pk-btn" id="pk-refresh" title="${L.tip_refresh}">${CONF.icons.refresh}</button>
                 <button class="pk-btn" id="pk-nav-fwd" title="${L.tip_fwd}">${CONF.icons.fwd}<span>${L.btn_fwd}</span></button>
-                <div style="width:1px;height:20px;background:var(--pk-bd);margin:0 4px"></div>
+                <div class="pk-sep"></div>
                 <button class="pk-btn" id="pk-newfolder" title="${L.tip_newfolder}">${CONF.icons.newfolder} <span>${L.btn_newfolder}</span></button>
                 <button class="pk-btn" id="pk-del" title="${L.tip_del}">${CONF.icons.del} <span>${L.btn_del}</span></button>
                 <button class="pk-btn" id="pk-deselect" title="${L.tip_deselect}" style="display:none">${CONF.icons.deselect} <span>${L.btn_deselect}</span></button>
-                <div style="width:1px;height:20px;background:var(--pk-bd);margin:0 4px"></div>
+                <div class="pk-sep"></div>
                 <button class="pk-btn" id="pk-copy" title="${L.tip_copy}">${CONF.icons.copy} <span>${L.btn_copy}</span></button>
                 <button class="pk-btn" id="pk-cut" title="${L.tip_cut}">${CONF.icons.cut} <span>${L.btn_cut}</span></button>
                 <button class="pk-btn" id="pk-paste" title="${L.tip_paste}" disabled>${CONF.icons.paste} <span>${L.btn_paste}</span></button>
-                <div style="width:1px;height:20px;background:var(--pk-bd);margin:0 4px"></div>
+                <div class="pk-sep"></div>
                 <button class="pk-btn" id="pk-rename" title="${L.tip_rename}">${CONF.icons.rename} <span>${L.btn_rename}</span></button>
                 <button class="pk-btn" id="pk-bulkrename" title="${L.tip_bulkrename}">${CONF.icons.bulkrename} <span>${L.btn_bulkrename}</span></button>
             </div>
@@ -103,7 +98,7 @@ async function openManager() {
                 <div class="pk-stat" id="pk-stat">${L.status_ready.replace('{n}', 0)}</div>
                 <div class="pk-grp">
                     <button class="pk-btn" id="pk-ext" title="${L.tip_ext}">${CONF.icons.play} <span>${L.btn_ext}</span></button>
-                    <div style="width:1px;height:20px;background:var(--pk-bd);margin:0 4px"></div>
+                    <div class="pk-sep"></div>
                     <button class="pk-btn" id="pk-idm" title="${L.tip_idm}">${CONF.icons.link} <span>${L.btn_idm}</span></button>
                     <button class="pk-btn" id="pk-aria2" title="${L.tip_aria2}">${CONF.icons.send} <span>${L.btn_aria2}</span></button>
                     <button class="pk-btn" id="pk-down" title="${L.tip_down}">${CONF.icons.download} <span>${L.btn_down}</span></button>
@@ -138,12 +133,13 @@ async function openManager() {
         btnRename: el.querySelector('#pk-rename'), btnBulkRename: el.querySelector('#pk-bulkrename'), btnPaste: el.querySelector('#pk-paste'),
         btnRefresh: el.querySelector('#pk-refresh'), btnNewFolder: el.querySelector('#pk-newfolder'),
         btnSettings: el.querySelector('#pk-settings'), btnClose: el.querySelector('#pk-close'),
+        btnHelp: el.querySelector('#pk-help'),
         btnExt: el.querySelector('#pk-ext'), btnIdm: el.querySelector('#pk-idm'),
-        pop: el.querySelector('#pk-pop'), ctx: el.querySelector('#pk-ctx'), cols: el.querySelectorAll('.pk-col')
+        pop: el.querySelector('#pk-pop'), ctx: el.querySelector('#pk-ctx'), cols: el.querySelectorAll('.pk-col'),
+        searchInput: el.querySelector('#pk-search-input')
     };
 
     function showModal(html) {
-<<<<<<< HEAD
         const m = document.createElement('div'); m.className = 'pk-modal-ov'; m.innerHTML = `<div class="pk-modal">${html}</div>`; UI.win.appendChild(m); return m;
     }
 
@@ -154,25 +150,10 @@ async function openManager() {
         UI.btnFwd.disabled = S.forward.length === 0;
     }
 
-=======
-        const m = document.createElement('div');
-        m.className = 'pk-modal-ov';
-        m.innerHTML = `<div class="pk-modal">${html}</div>`;
-        UI.win.appendChild(m);
-        return m;
-    }
-
-    // --- Navigation & Core Logic (Copied from v8.7.0, shortened here for brevity but you paste the FULL logic) ---
-    // (이 부분에 v8.7.0 코드의 load(), refresh(), renderList() 등 모든 함수를 붙여넣으세요.)
-    // (단, apiList 등은 위에서 import 했으므로 그대로 사용하면 됩니다.)
-
-    // ... (logic from v8.7.0) ...
-
-    // 이 예시에서는 핵심 함수 일부만 포함합니다. 실제 파일에는 v8.7.0의 openManager 내부 함수 전체가 필요합니다.
->>>>>>> f5e0bab (Overall improvements to script functions)
     async function load(isHistoryNav = false) {
         if (S.loading) return;
         setLoad(true);
+        S.search = ''; if (UI.searchInput) UI.searchInput.value = '';
         const cur = S.path[S.path.length - 1];
         updateNavState();
         UI.scan.style.display = 'flex'; UI.dup.style.display = 'none'; UI.dupTools.style.display = 'none';
@@ -189,9 +170,14 @@ async function openManager() {
         el.focus();
     }
 
-<<<<<<< HEAD
     async function refresh() {
-        S.display = [...S.items];
+        if (S.search) {
+            const q = S.search.toLowerCase();
+            S.display = S.items.filter(i => i.name.toLowerCase().includes(q));
+        } else {
+            S.display = [...S.items];
+        }
+
         S.dupReasons.clear(); S.dupGroups.clear();
 
         if (S.dupMode) {
@@ -244,7 +230,7 @@ async function openManager() {
         const currentIds = new Set(S.display.filter(x => !x.isHeader).map(i => i.id));
         for (let id of S.sel) { if (!currentIds.has(id)) S.sel.delete(id); }
         if (S.sel.size === 0) UI.chkAll.checked = false;
-        renderList(); updateStat(); el.focus();
+        renderList(); updateStat();
     }
 
     function renderList() {
@@ -329,6 +315,22 @@ async function openManager() {
     }
 
     // Handlers
+    if (UI.searchInput) {
+        UI.searchInput.oninput = (e) => { S.search = e.target.value.trim(); refresh(); };
+        UI.searchInput.onkeydown = (e) => { e.stopPropagation(); };
+    }
+
+    UI.btnHelp.onclick = () => {
+        const m = showModal(`
+            <h3 style="margin-top:0;">${L.modal_help_title}</h3>
+            ${L.help_desc}
+            <div class="pk-modal-act" style="margin-top:20px;">
+                <button class="pk-btn pri" id="help_close" style="width:100%; justify-content:center; height:40px;">닫기</button>
+            </div>
+        `);
+        m.querySelector('#help_close').onclick = () => m.remove();
+    };
+
     UI.scan.onclick = async () => { if (S.scanning) { S.scanning = false; return; } if (!confirm(L.msg_flatten_warn)) return; S.scanning = true; UI.stopBtn.onclick = () => { S.scanning = false; }; const root = S.path[S.path.length - 1]; let q = [{ id: root.id, name: root.name }]; let all = []; setLoad(true); try { while (q.length && S.scanning) { const curr = q.shift(); const pid = curr.id; updateLoadTxt(L.status_scanning.replace('{n}', all.length).replace('{f}', curr.name) + "\n" + L.loading_detail); const files = await apiList(pid, 500, (currentCount) => { updateLoadTxt(L.status_scanning.replace('{n}', all.length + currentCount).replace('{f}', curr.name)); }); for (const f of files) { if (f.kind === 'drive#folder') q.push({ id: f.id, name: f.name }); else all.push(f); } await sleep(20); } if (S.scanning) { S.items = all; UI.dup.style.display = 'flex'; refresh(); } } catch (e) { alert("Error: " + e.message); } finally { S.scanning = false; setLoad(false); updateStat(); } };
     UI.dup.onclick = () => { if (!S.dupMode) if (!confirm(L.msg_dup_warn)) return; S.dupMode = !S.dupMode; UI.dup.style.backgroundColor = S.dupMode ? '#444' : ''; UI.dup.style.color = S.dupMode ? '#fff' : ''; UI.dup.style.borderColor = S.dupMode ? '#666' : ''; refresh(); };
     UI.btnDupSize.onclick = () => { S.dupSizeStrategy = S.dupSizeStrategy === 'small' ? 'large' : 'small'; UI.condSize.textContent = `(${S.dupSizeStrategy === 'small' ? L.cond_small : L.cond_large})`; S.sel.clear(); const itemMap = new Map(); S.display.forEach(d => { if (d.isHeader) return; const gIdx = S.dupGroups.get(d.id); if (gIdx !== undefined) { if (!itemMap.has(gIdx)) itemMap.set(gIdx, []); itemMap.get(gIdx).push(d); } }); itemMap.forEach(items => { if (items.length < 2) return; let keep = (S.dupSizeStrategy === 'small') ? items.reduce((a, b) => parseInt(a.size) > parseInt(b.size) ? a : b) : items.reduce((a, b) => parseInt(a.size) < parseInt(b.size) ? a : b); items.forEach(i => { if (i.id !== keep.id) S.sel.add(i.id); }); }); renderList(); updateStat(); };
@@ -359,17 +361,10 @@ async function openManager() {
     ctx.querySelector('#ctx-del').onclick = () => { ctx.style.display = 'none'; UI.btnDel.click(); };
     UI.btnClose.addEventListener('click', () => { el.remove(); document.removeEventListener('keydown', keyHandler); document.removeEventListener('mouseup', mouseHandler); });
 
-=======
-    // ... (나머지 함수들: refresh, renderList, goBack, playVideo 등등 v8.7.0에서 복사) ...
-    // 주의: v8.7.0 코드에서 openManager() 안에 있던 모든 함수를 여기에 넣어야 합니다.
-
-    // Initial Call
->>>>>>> f5e0bab (Overall improvements to script functions)
     updateStat();
     load();
 }
 
-<<<<<<< HEAD
 function tryInject() {
     console.log("🚀 PikPak Script: Attempting inject...");
     if (document.getElementById('pk-launch')) {
@@ -385,8 +380,6 @@ function tryInject() {
     console.log("🚀 PikPak Script: INJECT SUCCESS!");
 }
 
-=======
->>>>>>> f5e0bab (Overall improvements to script functions)
 function inject() {
     if (document.getElementById('pk-launch')) return;
     const b = document.createElement('button'); b.id = 'pk-launch';
@@ -443,7 +436,6 @@ function inject() {
     };
 
     document.body.appendChild(b);
-<<<<<<< HEAD
     console.log("🚀 Button Created!");
 }
 
@@ -455,9 +447,3 @@ const obs = new MutationObserver(() => {
     }
 });
 obs.observe(document.body, { childList: true, subtree: true });
-=======
-}
-
-inject();
-const obs = new MutationObserver(inject); obs.observe(document.body, { childList: true, subtree: true });
->>>>>>> f5e0bab (Overall improvements to script functions)

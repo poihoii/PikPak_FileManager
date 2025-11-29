@@ -1,8 +1,8 @@
 <p align="center">
- <img src="https://raw.githubusercontent.com/poihoii/PikPak_FileManager/refs/heads/dev/img/main_screenshot.png" width=750px alt="main"></p>
+ <img src="https://raw.githubusercontent.com/poihoii/PikPak_FileManager/refs/heads/main/img/main_screenshot.png" width=750px alt="main"></p>
 <br>
 
-# <img src="https://raw.githubusercontent.com/poihoii/PikPak_FileManager/dev/img/logo%20(200).svg" width=33px alt="로고"> PikPak File Manager (PikPak 파일 관리자)
+# <img src="https://raw.githubusercontent.com/poihoii/PikPak_FileManager/refs/heads/main/img/logo%20(200).svg" width=33px alt="로고"> PikPak File Manager (PikPak 파일 관리자)
 
 <br>
 

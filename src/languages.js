@@ -2,7 +2,7 @@ const T = {
     ko: {
         title: "PikPak File Manager",
         col_name: "파일명", col_size: "크기", col_dur: "길이", col_date: "업로드 일자",
-        btn_scan: "구조 평면화", tip_scan: "하위 폴더의 모든 파일을 현재 목록으로 가져옵니다. (Flatten)",
+        btn_scan: "구조 평면화", tip_scan: "모든 하위 폴더의 파일을 꺼내옵니다",
         btn_stop: "중지", tip_stop: "작업 중지",
         btn_dup: "중복 검색", tip_dup: "현재 목록에서 중복된 동영상 파일을 검색합니다.",
         status_ready: "준비됨 ({n}개 항목)", status_scanning: "수집 중... {n}개 (현재: {f})",
@@ -12,10 +12,10 @@ const T = {
         btn_aria2: "Aria2 전송", tip_aria2: "Aria2 RPC로 다운로드 요청 전송",
         btn_idm: "IDM 직접 연결", tip_idm: "IDM 내보내기 파일(.ef2) 생성",
         btn_ext: "외부 플레이어", tip_ext: "PotPlayer/VLC 등으로 재생 (설정 필요)",
-        loading: "로딩 중...",
-        loading_detail: "파일 목록을 불러오는 중입니다...",
-        loading_fetch: "파일 목록 불러오는 중... ({n}개)",
-        loading_dup: "중복 분석 중... ({p}%)",
+        loading: "잠시만 기다려주세요...",
+        loading_detail: "PikPak 서버에서 파일 정보를 받아오고 있어요...",
+        loading_fetch: "숨겨진 파일까지 꼼꼼히 찾는 중이에요... ({n}개 발견)",
+        loading_dup: "중복된 파일이 있는지 확인하고 있어요... ({p}%)",
         sel_count: "{n}개 선택됨",
         tag_hash: "Hash 일치", tag_name: "파일명 일치", tag_sim: "유사 (시간+파일명)",
         lbl_dup_tool: "삭제 대상 선택:",
@@ -67,7 +67,50 @@ const T = {
         btn_confirm: "변경 확정", btn_cancel: "취소",
         modal_settings_title: "설정",
         label_lang: "언어 (Language)", label_player: "외부 플레이어", label_aria2_url: "Aria2 주소", label_aria2_token: "Aria2 토큰",
-        btn_save: "저장"
+        btn_save: "저장",
+
+        // 검색 및 도움말
+        placeholder_search: "파일명 검색...",
+        tip_search: "지금 보고 계신 목록에서 파일을 바로 찾아드려요",
+        btn_help: "도움말", tip_help: "사용법 및 단축키 안내",
+        modal_help_title: "무엇을 도와드릴까요?",
+        help_desc: `
+<div style="font-size:13px; line-height:1.7; color:var(--pk-fg);">
+    <div style="margin-bottom:15px;">
+        <b style="font-size:14px; color:var(--pk-pri);">🔍 원하는 파일 찾기 (Search)</b><br>
+        상단 검색창에 단어를 입력해보세요.<br>
+        지금 화면에 보이는 목록에서 해당 파일을 <b>즉시 찾아 보여드립니다.</b><br>
+        <span style="color:#888; font-size:12px;">※ '구조 평면화' 후 검색하면 전체 파일에서 찾을 수 있어요!</span>
+    </div>
+    
+    <div style="margin-bottom:15px;">
+        <b style="font-size:14px; color:var(--pk-pri);">📂 모든 파일 한눈에 보기 (Flatten)</b><br>
+        폴더 속에 깊숙이 숨어있는 파일들을 찾기 힘드셨나요?<br>
+        <b>'구조 평면화'</b> 버튼을 누르면 모든 파일을 밖으로 꺼내 보여드려요.<br>
+        <span style="color:#888; font-size:12px;">※ 관리가 끝나면 '새로고침(F5)'을 눌러 원래대로 돌아가세요.</span>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <b style="font-size:14px; color:var(--pk-pri);">🧹 중복 파일 정리 (Deduplication)</b><br>
+        똑같은 파일이 여러 개라 용량을 차지하고 있나요?<br>
+        <b>크기</b>나 <b>날짜</b>를 기준으로 중복된 파일을 쏙쏙 골라드릴게요.<br>
+        자동 선택된 파일을 확인하고 <b>'삭제'</b> 버튼만 누르면 정리가 끝납니다.
+    </div>
+    
+    <div>
+        <b style="font-size:14px; color:var(--pk-pri);">⌨️ 편리한 단축키</b>
+        <table class="pk-help-table">
+            <tr><td width="100"><b>F2</b></td><td>이름 변경 / 일괄 변경</td></tr>
+            <tr><td><b>F5</b></td><td>목록 새로고침 (초기화)</td></tr>
+            <tr><td><b>F8</b></td><td>새 폴더 만들기</td></tr>
+            <tr><td><b>Del</b></td><td>선택 항목 휴지통으로 이동</td></tr>
+            <tr><td><b>Ctrl+A</b></td><td>전체 선택</td></tr>
+            <tr><td><b>Ctrl+C/V</b></td><td>파일 복사 / 붙여넣기</td></tr>
+            <tr><td><b>Alt+S</b></td><td>환경 설정</td></tr>
+            <tr><td><b>Esc</b></td><td>선택 해제 / 창 닫기</td></tr>
+        </table>
+    </div>
+</div>`
     },
     en: {
         title: "PikPak File Manager",
@@ -110,7 +153,46 @@ const T = {
         modal_rename_title: "Rename", modal_rename_multi_title: "Bulk Rename", label_pattern: "Pattern", label_replace: "Replace", label_replace_note: "(Case sensitive)",
         placeholder_find: "Find", placeholder_replace: "Replace", btn_preview: "Preview", modal_preview_title: "Confirm",
         col_old: "Old", col_new: "New", btn_confirm: "Confirm", btn_cancel: "Cancel",
-        modal_settings_title: "Settings", label_lang: "Language", label_player: "Player", label_aria2_url: "Aria2 URL", label_aria2_token: "Token", btn_save: "Save"
+        modal_settings_title: "Settings", label_lang: "Language", label_player: "Player", label_aria2_url: "Aria2 URL", label_aria2_token: "Token", btn_save: "Save",
+
+        placeholder_search: "Search files...",
+        tip_search: "Search files (Filter current list)",
+        btn_help: "Help", tip_help: "Shortcuts & Usage",
+        modal_help_title: "Help & Usage",
+        help_desc: `
+<div style="font-size:13px; line-height:1.6; color:var(--pk-fg);">
+    <div style="margin-bottom:15px;">
+        <b style="font-size:14px; color:var(--pk-pri);">🔍 Search</b><br>
+        - Filters files in the current list instantly.<br>
+        - Use with 'Flatten' to search the entire drive.<br>
+    </div>
+    
+    <div style="margin-bottom:15px;">
+        <b style="font-size:14px; color:var(--pk-pri);">📂 Flatten</b><br>
+        - Retrieves all files from subfolders into a single list.<br>
+        - Press 'Refresh (F5)' to return to normal view.<br>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <b style="font-size:14px; color:var(--pk-pri);">🧹 Deduplication</b><br>
+        - <b>Size</b>: Selects duplicate files based on largest/smallest size.<br>
+        - <b>Date</b>: Selects based on oldest/newest upload date.<br>
+    </div>
+    
+    <div>
+        <b style="font-size:14px; color:var(--pk-pri);">⌨️ Shortcuts</b>
+        <table class="pk-help-table">
+            <tr><td width="100"><b>F2</b></td><td>Rename / Bulk Rename</td></tr>
+            <tr><td><b>F5</b></td><td>Refresh</td></tr>
+            <tr><td><b>F8</b></td><td>New Folder</td></tr>
+            <tr><td><b>Del</b></td><td>Delete items</td></tr>
+            <tr><td><b>Ctrl+A</b></td><td>Select All</td></tr>
+            <tr><td><b>Ctrl+C/V</b></td><td>Copy / Paste</td></tr>
+            <tr><td><b>Alt+S</b></td><td>Settings</td></tr>
+            <tr><td><b>Esc</b></td><td>Deselect / Close</td></tr>
+        </table>
+    </div>
+</div>`
     },
     ja: {
         title: "PikPak ファイルマネージャー",
@@ -170,7 +252,46 @@ const T = {
         modal_rename_title: "名前変更", modal_rename_multi_title: "一括名前変更", label_pattern: "パターン (例: Video {n})", label_replace: "文字列置換/削除", label_replace_note: "(大文字小文字を区別)",
         placeholder_find: "検索文字列", placeholder_replace: "置換文字列 (空欄=削除)", btn_preview: "プレビュー", modal_preview_title: "変更確認",
         col_old: "現在の名前", col_new: "変更後の名前", btn_confirm: "確定", btn_cancel: "キャンセル",
-        modal_settings_title: "設定", label_lang: "言語 (Language)", label_player: "外部プレーヤー", label_aria2_url: "Aria2 URL", label_aria2_token: "トークン", btn_save: "保存"
+        modal_settings_title: "設定", label_lang: "言語 (Language)", label_player: "外部プレーヤー", label_aria2_url: "Aria2 URL", label_aria2_token: "トークン", btn_save: "保存",
+
+        placeholder_search: "検索...",
+        tip_search: "検索 (現在のリスト内)",
+        btn_help: "ヘルプ", tip_help: "ショートカットと使い方",
+        modal_help_title: "ヘルプと使い方",
+        help_desc: `
+<div style="font-size:13px; line-height:1.6; color:var(--pk-fg);">
+    <div style="margin-bottom:15px;">
+        <b style="font-size:14px; color:var(--pk-pri);">🔍 検索 (Search)</b><br>
+        - 現在のリストに表示されているファイルを即座にフィルタリングします。<br>
+        - 「構造平坦化」機能と併用することで、ドライブ全体からファイルを検索できます。<br>
+    </div>
+    
+    <div style="margin-bottom:15px;">
+        <b style="font-size:14px; color:var(--pk-pri);">📂 構造平坦化 (Flatten)</b><br>
+        - サブフォルダに含まれるすべてのファイルを検索し、一つのリストにまとめます。<br>
+        - 作業が終わったら「更新 (F5)」を押して元のフォルダ構造に戻ってください。<br>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <b style="font-size:14px; color:var(--pk-pri);">🧹 重複整理 (Deduplication)</b><br>
+        - <b>サイズ</b>: 重複ファイルの中で、容量が最も大きい（または小さい）ファイルを残して選択します。<br>
+        - <b>日付</b>: アップロード日時が最も古い（または新しい）ファイルを残して選択します。<br>
+    </div>
+    
+    <div>
+        <b style="font-size:14px; color:var(--pk-pri);">⌨️ ショートカットキー</b>
+        <table class="pk-help-table">
+            <tr><td width="100"><b>F2</b></td><td>名前変更 / 一括変更</td></tr>
+            <tr><td><b>F5</b></td><td>リスト更新</td></tr>
+            <tr><td><b>F8</b></td><td>新規フォルダ作成</td></tr>
+            <tr><td><b>Del</b></td><td>選択項目を削除 (ゴミ箱)</td></tr>
+            <tr><td><b>Ctrl+A</b></td><td>全選択</td></tr>
+            <tr><td><b>Ctrl+C/V</b></td><td>コピー / 貼り付け</td></tr>
+            <tr><td><b>Alt+S</b></td><td>設定 (Settings)</td></tr>
+            <tr><td><b>Esc</b></td><td>選択解除 / 閉じる</td></tr>
+        </table>
+    </div>
+</div>`
     },
     zh: {
         title: "PikPak 文件管理器",
@@ -230,7 +351,46 @@ const T = {
         modal_rename_title: "重命名", modal_rename_multi_title: "批量重命名", label_pattern: "模式 (例: Video {n})", label_replace: "替换/删除", label_replace_note: "(区分大小写)",
         placeholder_find: "查找内容", placeholder_replace: "替换为 (留空删除)", btn_preview: "预览", modal_preview_title: "确认更改",
         col_old: "原名称", col_new: "新名称", btn_confirm: "确定", btn_cancel: "取消",
-        modal_settings_title: "设置", label_lang: "语言 (Language)", label_player: "外部播放器", label_aria2_url: "Aria2 地址", label_aria2_token: "Token", btn_save: "保存"
+        modal_settings_title: "设置", label_lang: "语言 (Language)", label_player: "外部播放器", label_aria2_url: "Aria2 地址", label_aria2_token: "Token", btn_save: "保存",
+
+        placeholder_search: "搜索文件...",
+        tip_search: "搜索 (筛选当前列表)",
+        btn_help: "帮助", tip_help: "快捷键与使用说明",
+        modal_help_title: "使用说明",
+        help_desc: `
+<div style="font-size:13px; line-height:1.6; color:var(--pk-fg);">
+    <div style="margin-bottom:15px;">
+        <b style="font-size:14px; color:var(--pk-pri);">🔍 搜索 (Search)</b><br>
+        - 即时筛选当前加载的文件列表。<br>
+        - 配合“结构扁平化”功能使用，可实现全盘文件搜索。<br>
+    </div>
+    
+    <div style="margin-bottom:15px;">
+        <b style="font-size:14px; color:var(--pk-pri);">📂 结构扁平化 (Flatten)</b><br>
+        - 递归提取所有子文件夹中的文件，并显示在一个列表中。<br>
+        - 管理完成后，请按“刷新 (F5)”返回原始文件夹结构。<br>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <b style="font-size:14px; color:var(--pk-pri);">🧹 重复整理 (Deduplication)</b><br>
+        - <b>文件大小</b>: 在重复组中保留最大（或最小）的文件，选中其余文件。<br>
+        - <b>上传日期</b>: 保留最早（或最新）上传的文件，选中其余文件。<br>
+    </div>
+    
+    <div>
+        <b style="font-size:14px; color:var(--pk-pri);">⌨️ 快捷键</b>
+        <table class="pk-help-table">
+            <tr><td width="100"><b>F2</b></td><td>重命名 / 批量重命名</td></tr>
+            <tr><td><b>F5</b></td><td>刷新列表</td></tr>
+            <tr><td><b>F8</b></td><td>新建文件夹</td></tr>
+            <tr><td><b>Del</b></td><td>删除选中项 (回收站)</td></tr>
+            <tr><td><b>Ctrl+A</b></td><td>全选</td></tr>
+            <tr><td><b>Ctrl+C/V</b></td><td>复制 / 粘贴</td></tr>
+            <tr><td><b>Alt+S</b></td><td>设置 (Settings)</td></tr>
+            <tr><td><b>Esc</b></td><td>取消选择 / 关闭</td></tr>
+        </table>
+    </div>
+</div>`
     }
 };
 
