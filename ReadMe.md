@@ -1,8 +1,8 @@
 <p align="center">
- <img src="https://raw.githubusercontent.com/poihoii/PikPak_FileManager/refs/heads/dev/img/main_screenshot.png" width=750px alt="main"></p>
+ <img src="https://raw.githubusercontent.com/poihoii/PikPak_FileManager/refs/heads/main/img/main_screenshot.png" width=750px alt="main"></p>
 <br>
 
-# <img src="https://raw.githubusercontent.com/poihoii/PikPak_FileManager/dev/img/logo%20(200).svg" width=33px alt="로고"> PikPak File Manager (PikPak 파일 관리자)
+# <img src="https://raw.githubusercontent.com/poihoii/PikPak_FileManager/refs/heads/main/img/logo%20(200).svg" width=33px alt="로고"> PikPak File Manager (PikPak 파일 관리자)
 
 <br>
 
@@ -16,7 +16,7 @@
 
 <br>
 
-### 🌍 Languages : [한국어](https://raw.githubusercontent.com/poihoii/PikPak_FileManager/refs/heads/main/ReadMe.md) | [English](https://raw.githubusercontent.com/poihoii/PikPak_FileManager/refs/heads/main/user.js/ReadMe(En).md) | [中文 (简体)](https://raw.githubusercontent.com/poihoii/PikPak_FileManager/refs/heads/main/user.js/ReadMe(Zh).md) | [日本語](https://raw.githubusercontent.com/poihoii/PikPak_FileManager/refs/heads/main/user.js/ReadMe(Ja).md)
+### 🌍 지원 언어 (Languages) : [한국어](https://github.com/poihoii/PikPak_FileManager/blob/main/ReadMe.md) | [English](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(En).md) | [中文 (简体)](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(Zn).md) | [日本語](https://github.com/poihoii/PikPak_FileManager/blob/main/user.js/ReadMe(Ja).md)
 
 <br>
 
