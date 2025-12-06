@@ -3,7 +3,8 @@ export const CSS = `
     @media (prefers-color-scheme: dark) { :root { --pk-bg: #202020; --pk-fg: #f5f5f5; --pk-bd: #333333; --pk-hl: #2d2d2d; --pk-sel-bg: #2b3a4a; --pk-sel-bd: #0067c0; --pk-pri: #4cc2ff; --pk-btn-hov: #3a3a3a; --pk-gh: #2a2a2a; --pk-gh-fg: #eee; --pk-sb-th: #555; --pk-sb-hov: #777; } }
     
     .pk-ov { position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,0.4); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; font-family: inherit; outline: none; }
-    .pk-win { width: 90vw; max-width: 1600px; min-width: 480px; height: 80vh; background: var(--pk-bg); color: var(--pk-fg); border-radius: 8px; box-shadow: 0 25px 50px rgba(0,0,0,0.25); display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--pk-bd); }
+    
+    .pk-win { width: 85vw; max-width: 1400px; min-width: 400px; height: 90vh; background: var(--pk-bg); color: var(--pk-fg); border-radius: 8px; box-shadow: 0 25px 50px rgba(0,0,0,0.25); display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--pk-bd); }
     
     .pk-hd { height: 48px; border-bottom: 1px solid var(--pk-bd); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; background: var(--pk-bg); }
     .pk-tt { font-weight: 700; font-size: 20px; display: flex; align-items: center; gap: 10px; }
@@ -47,7 +48,6 @@ export const CSS = `
     .pk-nav span { cursor: pointer; padding: 2px 6px; border-radius: 4px; } .pk-nav span:hover { background: var(--pk-hl); color: var(--pk-fg); }
     .pk-nav span.act { font-weight: 600; color: var(--pk-fg); cursor: default; }
 
-    /* Grid Layout */
     .pk-grid-hd, .pk-row { 
         display: grid; 
         grid-template-columns: 36px 1fr 90px 80px 100px; 
@@ -67,7 +67,6 @@ export const CSS = `
     .pk-col { cursor: pointer; font-weight: 600; display:flex; align-items:center; justify-content: flex-start; } 
     .pk-col:hover { color: var(--pk-fg); }
 
-    /* Scrollbar */
     .pk-vp::-webkit-scrollbar, .pk-modal::-webkit-scrollbar, .pk-prev-list::-webkit-scrollbar { width: 6px; }
     .pk-vp::-webkit-scrollbar-track, .pk-modal::-webkit-scrollbar-track, .pk-prev-list::-webkit-scrollbar-track { background: var(--pk-sb-bg); }
     .pk-vp::-webkit-scrollbar-thumb, .pk-modal::-webkit-scrollbar-thumb, .pk-prev-list::-webkit-scrollbar-thumb { background: var(--pk-sb-th); border-radius: 3px; }
@@ -79,22 +78,21 @@ export const CSS = `
     .pk-row:hover { background: var(--pk-hl); }
     .pk-row.sel { background: var(--pk-sel-bg); border-color: transparent; }
     
-    /* [수정] 아이콘 고정 및 텍스트 말줄임 처리 */
     .pk-name { 
         display: flex; 
         align-items: center; 
         overflow: hidden; 
-        min-width: 0; /* Grid 안에서 flex child가 줄어들도록 설정 */
+        min-width: 0; 
     } 
     .pk-name svg { 
-        flex-shrink: 0; /* 공간 부족해도 아이콘 크기 유지 */
+        flex-shrink: 0; 
         margin-right: 8px; 
     } 
     .pk-name span { 
         overflow: hidden; 
         text-overflow: ellipsis; 
         white-space: nowrap; 
-        flex: 1; /* 남은 공간 차지 */
+        flex: 1; 
     }
 
     .pk-group-hd { display: flex; background: var(--pk-gh); color: var(--pk-gh-fg); font-weight: bold; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--pk-bd); border-top: 1px solid var(--pk-bd); margin-top: -1px; min-height: 32px; }
@@ -121,8 +119,6 @@ export const CSS = `
     .pk-modal-ov { position: absolute; inset: 0; background: rgba(0,0,0,0.5); z-index: 10001; display: flex; align-items: center; justify-content: center; }
     
     .pk-modal { position: relative; background: var(--pk-bg); padding: 25px; border-radius: 12px; width: 500px; max-height: 85vh; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; border: 1px solid var(--pk-bd); box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
-    
-    /* [수정] 모달 제목: 오른쪽 패딩 추가로 닫기 버튼과 겹침 방지 */
     .pk-modal h3 { margin: 0 0 5px 0; font-size: 16px; border-bottom: 1px solid var(--pk-bd); padding-bottom: 10px; padding-right: 40px; }
     
     .pk-modal-close { position: absolute; top: 15px; right: 15px; cursor: pointer; color: #888; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: background 0.1s, color 0.1s; }
@@ -137,4 +133,47 @@ export const CSS = `
     .pk-prev-list { flex: 1; overflow-y: auto; border: 1px solid var(--pk-bd); max-height: 300px; }
     .pk-prev-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 5px 10px; border-bottom: 1px solid var(--pk-bd); font-size: 12px; }
     .pk-prev-row:nth-child(odd) { background: var(--pk-hl); }
+
+    .pk-toast-box { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 20000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+    .pk-toast { background: rgba(0,0,0,0.8); color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 13px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: fadein 0.2s, fadeout 0.2s 2.8s forwards; backdrop-filter: blur(4px); display: flex; align-items: center; gap: 8px; }
+    @keyframes fadein { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeout { from { opacity: 1; } to { opacity: 0; } }
+
+    .pk-grid-con { 
+        padding: 10px; 
+        position: relative; 
+        height: 100%;
+        box-sizing: border-box;
+    }
+    
+    .pk-card { 
+        position: absolute; 
+        border: 1px solid transparent; border-radius: 8px; padding: 8px; cursor: pointer; 
+        display: flex; flex-direction: column; align-items: center; gap: 8px; transition: background 0.1s;
+        box-sizing: border-box;
+        height: 200px; 
+    }
+    .pk-card:hover { background: var(--pk-hl); }
+    .pk-card.sel { background: var(--pk-sel-bg); border-color: var(--pk-sel-bd); }
+    
+    .pk-card-thumb { 
+        width: 100%; height: 110px; 
+        background: #f5f5f5; border-radius: 6px; overflow: hidden; 
+        display: flex; align-items: center; justify-content: center; 
+    }
+    @media (prefers-color-scheme: dark) { .pk-card-thumb { background: #333; } }
+
+    .pk-card-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .pk-card-thumb svg { width: 48px; height: 48px; opacity: 0.7; }
+    
+    .pk-card-name { 
+        font-size: 12px; text-align: center; width: 100%; 
+        overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; 
+        line-height: 1.3; height: 32px; word-break: break-all;
+    }
+    .pk-card-info { font-size: 11px; color: #888; display: flex; justify-content: space-between; width: 100%; margin-top: auto; }
+    .pk-card-chk { position: absolute; top: 10px; left: 10px; z-index: 2; transform: scale(1.1); display:none; }
+    .pk-card:hover .pk-card-chk, .pk-card.sel .pk-card-chk { display:block; }
+    
+    .hidden { display: none !important; }
 `;

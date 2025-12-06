@@ -44,7 +44,8 @@ async function openManager() {
         clipSourceParentId: null,
         loading: false,
         lastSelIdx: -1,
-        search: ''
+        search: '',
+        view: gmGet('pk_view_mode', 'list') // 'list' or 'grid'
     };
 
     const el = document.createElement('div'); el.className = 'pk-ov';
@@ -89,6 +90,10 @@ async function openManager() {
                 </div>
                 <button class="pk-btn" id="pk-dup" style="display:none" title="${L.tip_dup}">${CONF.icons.dup} <span>${L.btn_dup}</span></button>
                 <button class="pk-btn" id="pk-scan" title="${L.tip_scan}">${CONF.icons.scan} <span>${L.btn_scan}</span></button>
+                <div class="pk-sep"></div>
+                <button class="pk-btn" id="pk-view-toggle" title="${S.view === 'list' ? L.btn_view_grid : L.btn_view_list}">
+                    ${S.view === 'list' ? CONF.icons.grid_view : CONF.icons.list_view}
+                </button>
             </div>
             <div class="pk-tb" id="pk-actionbar">
                 <button class="pk-btn" id="pk-nav-back" title="${L.tip_back}">${CONF.icons.back}<span>${L.btn_back}</span></button>
@@ -105,6 +110,8 @@ async function openManager() {
                 <div class="pk-sep"></div>
                 <button class="pk-btn" id="pk-rename" title="${L.tip_rename}">${CONF.icons.rename} <span>${L.btn_rename}</span></button>
                 <button class="pk-btn" id="pk-bulkrename" title="${L.tip_bulkrename}">${CONF.icons.bulkrename} <span>${L.btn_bulkrename}</span></button>
+                <div class="pk-sep"></div>
+                <button class="pk-btn" id="pk-link-copy" title="${L.tip_link_copy}">${CONF.icons.link_copy || '🔗'} <span>${L.btn_link_copy}</span></button>
             </div>
             <div class="pk-grid-hd">
                 <div><input type="checkbox" id="pk-all"></div>
@@ -138,6 +145,7 @@ async function openManager() {
             <div class="pk-ctx-item" id="ctx-rename">✏️ ${L.ctx_rename}</div>
             <div class="pk-ctx-item" id="ctx-del" style="color:#d93025">🗑️ ${L.ctx_del}</div>
         </div>
+        <div class="pk-toast-box" id="pk-toast-box"></div>
     `;
     document.body.appendChild(el);
 
@@ -157,6 +165,7 @@ async function openManager() {
         btnSettings: el.querySelector('#pk-settings'), btnClose: el.querySelector('#pk-close'),
         btnHelp: el.querySelector('#pk-help'),
         btnExt: el.querySelector('#pk-ext'), btnIdm: el.querySelector('#pk-idm'),
+        btnLinkCopy: el.querySelector('#pk-link-copy'), btnViewToggle: el.querySelector('#pk-view-toggle'),
         pop: el.querySelector('#pk-pop'), ctx: el.querySelector('#pk-ctx'), cols: el.querySelectorAll('.pk-col'),
         searchInput: el.querySelector('#pk-search-input')
     };
@@ -167,6 +176,15 @@ async function openManager() {
         UI.win.appendChild(m);
         m.querySelector('.pk-modal-close').addEventListener('click', () => m.remove());
         return m;
+    }
+
+    function showToast(msg) {
+        const box = el.querySelector('#pk-toast-box');
+        const t = document.createElement('div');
+        t.className = 'pk-toast';
+        t.innerHTML = `<span>✅</span><span>${esc(msg)}</span>`;
+        box.appendChild(t);
+        setTimeout(() => t.remove(), 3000);
     }
 
     function showAlert(msg, title = L.title_alert) {
@@ -315,16 +333,33 @@ async function openManager() {
         const currentIds = new Set(S.display.filter(x => !x.isHeader).map(i => i.id));
         for (let id of S.sel) { if (!currentIds.has(id)) S.sel.delete(id); }
         if (S.sel.size === 0) UI.chkAll.checked = false;
-        renderList(); updateStat();
+
+        render(); // 통합 렌더 호출
+        updateStat();
+    }
+
+    function render() {
+        if (S.view === 'list') {
+            const hd = UI.win.querySelector('.pk-grid-hd');
+            if (hd) hd.classList.remove('hidden');
+            UI.in.className = 'pk-in';
+            renderList();
+        } else {
+            const hd = UI.win.querySelector('.pk-grid-hd');
+            if (hd) hd.classList.add('hidden');
+            UI.in.className = 'pk-grid-con';
+            renderGrid();
+        }
     }
 
     function renderList() {
         UI.in.style.height = `${S.display.length * CONF.rowHeight}px`;
         UI.cols.forEach(c => { c.querySelector('span').textContent = (c.dataset.k === S.sort) ? (S.dir === 1 ? ' ▲' : ' ▼') : ''; c.style.color = (c.dataset.k === S.sort) ? 'var(--pk-pri)' : ''; });
-        requestAnimationFrame(renderVisible);
+        requestAnimationFrame(renderVisibleList);
     }
 
-    function renderVisible() {
+    function renderVisibleList() {
+        if (S.view !== 'list') return;
         const top = UI.vp.scrollTop; const h = UI.vp.clientHeight;
         const start = Math.max(0, Math.floor(top / CONF.rowHeight) - CONF.buffer);
         const end = Math.min(S.display.length, Math.ceil((top + h) / CONF.rowHeight) + CONF.buffer);
@@ -359,7 +394,96 @@ async function openManager() {
             UI.in.appendChild(row);
         }
     }
-    UI.vp.onscroll = renderVisible;
+    UI.vp.onscroll = () => {
+        if (S.view === 'list') renderVisibleList();
+        else renderGrid();
+    };
+
+    function renderGrid() {
+        if (S.view !== 'grid') return;
+
+        const gap = 10;
+        const padding = 10;
+        const cardH = 200;
+        const containerW = UI.vp.clientWidth - (padding * 2);
+        const minCardW = 140;
+        const cols = Math.floor((containerW + gap) / (minCardW + gap)) || 1;
+        const cardW = (containerW - (cols - 1) * gap) / cols;
+
+        const visibleItems = S.display.filter(d => !d.isHeader);
+        const totalRows = Math.ceil(visibleItems.length / cols);
+        UI.in.style.height = `${totalRows * (cardH + gap)}px`;
+
+        requestAnimationFrame(() => renderVisibleGrid(visibleItems, cols, cardW, cardH, gap));
+    }
+
+    function renderVisibleGrid(items, cols, cardW, cardH, gap) {
+        if (S.view !== 'grid') return;
+
+        const top = UI.vp.scrollTop;
+        const h = UI.vp.clientHeight;
+        const startRow = Math.max(0, Math.floor(top / (cardH + gap)) - 2);
+        const endRow = Math.min(Math.ceil(items.length / cols), Math.ceil((top + h) / (cardH + gap)) + 2);
+
+        UI.in.innerHTML = '';
+
+        for (let r = startRow; r < endRow; r++) {
+            for (let c = 0; c < cols; c++) {
+                const idx = r * cols + c;
+                if (idx >= items.length) break;
+
+                const d = items[idx];
+                const isSel = S.sel.has(d.id);
+                const card = document.createElement('div');
+                card.className = `pk-card ${isSel ? 'sel' : ''}`;
+
+                card.style.width = `${cardW}px`;
+                card.style.height = `${cardH}px`;
+                card.style.left = `${10 + c * (cardW + gap)}px`;
+                card.style.top = `${10 + r * (cardH + gap)}px`;
+
+                let thumbContent = getIcon(d);
+                if (d.kind !== 'drive#folder' && d.thumbnail_link) {
+                    thumbContent = `<img src="${d.thumbnail_link}" loading="lazy" decoding="async">`;
+                }
+
+                card.innerHTML = `
+                    <input type="checkbox" class="pk-card-chk" ${isSel ? 'checked' : ''}>
+                    <div class="pk-card-thumb">${thumbContent}</div>
+                    <div class="pk-card-name" title="${esc(d.name)}">${esc(d.name)}</div>
+                    <div class="pk-card-info">
+                        <span>${d.kind === 'drive#folder' ? '' : fmtSize(d.size)}</span>
+                        <span>${d.params?.duration ? fmtDur(d.params.duration) : ''}</span>
+                    </div>
+                `;
+
+                const chk = card.querySelector('input');
+                card.onclick = (e) => {
+                    if (S.loading) return;
+                    if (e.target !== chk) chk.checked = !chk.checked;
+                    if (chk.checked) S.sel.add(d.id); else S.sel.delete(d.id);
+                    S.lastSelIdx = idx;
+                    if (chk.checked) card.classList.add('sel'); else card.classList.remove('sel');
+                    updateStat();
+                };
+                card.ondblclick = (e) => {
+                    e.preventDefault();
+                    if (S.loading) return;
+                    if (d.kind === 'drive#folder') { S.history.push({ path: [...S.path] }); S.path.push({ id: d.id, name: d.name }); S.forward = []; load(); }
+                    else if (d.mime_type?.startsWith('video')) playVideo(d);
+                };
+                card.oncontextmenu = (e) => {
+                    e.preventDefault();
+                    if (!S.sel.has(d.id)) { S.sel.clear(); S.sel.add(d.id); card.classList.add('sel'); updateStat(); }
+                    UI.ctx.style.display = 'block';
+                    let x = e.clientX; let y = e.clientY;
+                    UI.ctx.style.left = x + 'px'; UI.ctx.style.top = y + 'px';
+                };
+
+                UI.in.appendChild(card);
+            }
+        }
+    }
 
     function renderCrumb() {
         UI.crumb.innerHTML = '';
@@ -400,6 +524,7 @@ async function openManager() {
     function updateStat() {
         const n = S.sel.size; UI.stat.textContent = n > 0 ? L.sel_count.replace('{n}', n) : L.status_ready.replace('{n}', S.display.length); const hasSel = n > 0;
         UI.btnCopy.disabled = !hasSel; UI.btnCut.disabled = !hasSel; UI.btnDel.disabled = !hasSel; UI.btnRename.disabled = n !== 1; UI.btnBulkRename.disabled = n < 2; UI.btnSettings.disabled = false; UI.btnDeselect.style.display = hasSel ? 'inline-flex' : 'none';
+        if (UI.btnLinkCopy) UI.btnLinkCopy.disabled = !hasSel;
     }
 
     async function getLinks() { const res = []; for (const id of S.sel) { let item = S.items.find(x => x.id === id); if (item && !item.web_content_link) { try { item = await apiGet(id); } catch { } } if (item?.web_content_link) res.push(item); } return res; }
@@ -429,14 +554,14 @@ async function openManager() {
 
     UI.scan.onclick = async () => { if (S.scanning) { S.scanning = false; return; } if (!await showConfirm(L.msg_flatten_warn)) return; S.scanning = true; UI.stopBtn.onclick = () => { S.scanning = false; }; const root = S.path[S.path.length - 1]; let q = [{ id: root.id, name: root.name }]; let all = []; setLoad(true); try { while (q.length && S.scanning) { const curr = q.shift(); const pid = curr.id; updateLoadTxt(L.status_scanning.replace('{n}', all.length).replace('{f}', curr.name) + "\n" + L.loading_detail); const files = await apiList(pid, 500, (currentCount) => { updateLoadTxt(L.status_scanning.replace('{n}', all.length + currentCount).replace('{f}', curr.name)); }); for (const f of files) { if (f.kind === 'drive#folder') q.push({ id: f.id, name: f.name }); else all.push(f); } await sleep(20); } if (S.scanning) { S.items = all; UI.dup.style.display = 'flex'; refresh(); } } catch (e) { showAlert("Error: " + e.message); } finally { S.scanning = false; setLoad(false); updateStat(); } };
     UI.dup.onclick = async () => { if (!S.dupMode) if (!await showConfirm(L.msg_dup_warn)) return; S.dupMode = !S.dupMode; UI.dup.style.backgroundColor = S.dupMode ? '#444' : ''; UI.dup.style.color = S.dupMode ? '#fff' : ''; UI.dup.style.borderColor = S.dupMode ? '#666' : ''; refresh(); };
-    UI.btnDupSize.onclick = () => { S.dupSizeStrategy = S.dupSizeStrategy === 'small' ? 'large' : 'small'; UI.condSize.textContent = `(${S.dupSizeStrategy === 'small' ? L.cond_small : L.cond_large})`; S.sel.clear(); const itemMap = new Map(); S.display.forEach(d => { if (d.isHeader) return; const gIdx = S.dupGroups.get(d.id); if (gIdx !== undefined) { if (!itemMap.has(gIdx)) itemMap.set(gIdx, []); itemMap.get(gIdx).push(d); } }); itemMap.forEach(items => { if (items.length < 2) return; let keep = (S.dupSizeStrategy === 'small') ? items.reduce((a, b) => parseInt(a.size) > parseInt(b.size) ? a : b) : items.reduce((a, b) => parseInt(a.size) < parseInt(b.size) ? a : b); items.forEach(i => { if (i.id !== keep.id) S.sel.add(i.id); }); }); renderList(); updateStat(); };
-    UI.btnDupDate.onclick = () => { S.dupDateStrategy = S.dupDateStrategy === 'old' ? 'new' : 'old'; UI.condDate.textContent = `(${S.dupDateStrategy === 'old' ? L.cond_old : L.cond_new})`; S.sel.clear(); const itemMap = new Map(); S.display.forEach(d => { if (d.isHeader) return; const gIdx = S.dupGroups.get(d.id); if (gIdx !== undefined) { if (!itemMap.has(gIdx)) itemMap.set(gIdx, []); itemMap.get(gIdx).push(d); } }); itemMap.forEach(items => { if (items.length < 2) return; let keep = (S.dupDateStrategy === 'old') ? items.reduce((a, b) => new Date(a.modified_time) > new Date(b.modified_time) ? a : b) : items.reduce((a, b) => new Date(a.modified_time) < new Date(b.modified_time) ? a : b); items.forEach(i => { if (i.id !== keep.id) S.sel.add(i.id); }); }); renderList(); updateStat(); };
+    UI.btnDupSize.onclick = () => { S.dupSizeStrategy = S.dupSizeStrategy === 'small' ? 'large' : 'small'; UI.condSize.textContent = `(${S.dupSizeStrategy === 'small' ? L.cond_small : L.cond_large})`; S.sel.clear(); const itemMap = new Map(); S.display.forEach(d => { if (d.isHeader) return; const gIdx = S.dupGroups.get(d.id); if (gIdx !== undefined) { if (!itemMap.has(gIdx)) itemMap.set(gIdx, []); itemMap.get(gIdx).push(d); } }); itemMap.forEach(items => { if (items.length < 2) return; let keep = (S.dupSizeStrategy === 'small') ? items.reduce((a, b) => parseInt(a.size) > parseInt(b.size) ? a : b) : items.reduce((a, b) => parseInt(a.size) < parseInt(b.size) ? a : b); items.forEach(i => { if (i.id !== keep.id) S.sel.add(i.id); }); }); render(); updateStat(); };
+    UI.btnDupDate.onclick = () => { S.dupDateStrategy = S.dupDateStrategy === 'old' ? 'new' : 'old'; UI.condDate.textContent = `(${S.dupDateStrategy === 'old' ? L.cond_old : L.cond_new})`; S.sel.clear(); const itemMap = new Map(); S.display.forEach(d => { if (d.isHeader) return; const gIdx = S.dupGroups.get(d.id); if (gIdx !== undefined) { if (!itemMap.has(gIdx)) itemMap.set(gIdx, []); itemMap.get(gIdx).push(d); } }); itemMap.forEach(items => { if (items.length < 2) return; let keep = (S.dupDateStrategy === 'old') ? items.reduce((a, b) => new Date(a.modified_time) > new Date(b.modified_time) ? a : b) : items.reduce((a, b) => new Date(a.modified_time) < new Date(b.modified_time) ? a : b); items.forEach(i => { if (i.id !== keep.id) S.sel.add(i.id); }); }); render(); updateStat(); };
     UI.cols.forEach(c => c.onclick = () => { const k = c.dataset.k; if (S.sort === k) S.dir *= -1; else { S.sort = k; S.dir = 1; } refresh(); });
-    UI.chkAll.onclick = (e) => { if (e.target.checked) S.display.forEach(i => S.sel.add(i.id)); else S.sel.clear(); renderList(); updateStat(); };
+    UI.chkAll.onclick = (e) => { if (e.target.checked) S.display.forEach(i => S.sel.add(i.id)); else S.sel.clear(); render(); updateStat(); };
     UI.btnBack.onclick = goBack; UI.btnFwd.onclick = goForward; UI.btnRefresh.onclick = () => load();
     UI.btnNewFolder.onclick = async () => { const name = await showPrompt(L.msg_newfolder_prompt, ''); if (!name) return; const cur = S.path[S.path.length - 1]; try { await fetch('https://api-drive.mypikpak.com/drive/v1/files', { method: 'POST', headers: getHeaders(), body: JSON.stringify({ kind: 'drive#folder', parent_id: cur.id || '', name: name }) }); load(); } catch (e) { showAlert('Error: ' + e.message); } };
-    UI.btnCopy.onclick = () => { if (S.sel.size === 0) return; S.clipItems = Array.from(S.sel); S.clipType = 'copy'; S.clipSourceParentId = S.path[S.path.length - 1].id || ''; UI.btnPaste.disabled = false; showAlert(L.msg_copy_done); };
-    UI.btnCut.onclick = () => { if (S.sel.size === 0) return; S.clipItems = Array.from(S.sel); S.clipType = 'move'; S.clipSourceParentId = S.path[S.path.length - 1].id || ''; UI.btnPaste.disabled = false; showAlert(L.msg_cut_done); };
+    UI.btnCopy.onclick = () => { if (S.sel.size === 0) return; S.clipItems = Array.from(S.sel); S.clipType = 'copy'; S.clipSourceParentId = S.path[S.path.length - 1].id || ''; UI.btnPaste.disabled = false; showToast(L.msg_copy_done); };
+    UI.btnCut.onclick = () => { if (S.sel.size === 0) return; S.clipItems = Array.from(S.sel); S.clipType = 'move'; S.clipSourceParentId = S.path[S.path.length - 1].id || ''; UI.btnPaste.disabled = false; showToast(L.msg_cut_done); };
     UI.btnPaste.onclick = async () => { if (!S.clipItems || S.clipItems.length === 0) { showAlert(L.msg_paste_empty); return; } setLoad(true); const dest = S.path[S.path.length - 1].id || ''; if (S.clipSourceParentId === dest) { showAlert(L.msg_paste_same_folder); setLoad(false); return; } const ids = S.clipItems.slice(); const endpoint = S.clipType === 'move' ? 'https://api-drive.mypikpak.com/drive/v1/files:batchMove' : 'https://api-drive.mypikpak.com/drive/v1/files:batchCopy'; try { await fetch(endpoint, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ ids: ids, to: { parent_id: dest } }) }); S.clipItems = []; S.clipType = ''; UI.btnPaste.disabled = true; await sleep(500); setLoad(false); await load(); } catch (e) { showAlert('Paste error: ' + e.message); setLoad(false); } };
     UI.btnRename.onclick = async () => { if (S.sel.size !== 1) return; const id = Array.from(S.sel)[0]; const item = S.items.find(i => i.id === id); if (!item) return; const m = showModal(`<h3>${L.modal_rename_title}</h3><div class="pk-field"><input type="text" id="rn_new_name" value="${esc(item.name)}"></div><div class="pk-modal-act"><button class="pk-btn" id="rn_cancel">${L.btn_cancel}</button><button class="pk-btn pri" id="rn_confirm">${L.btn_confirm}</button></div>`); const inp = m.querySelector('#rn_new_name'); inp.focus(); if (item.kind !== 'drive#folder' && item.name.lastIndexOf('.') > 0) inp.setSelectionRange(0, item.name.lastIndexOf('.')); else inp.select(); const doRename = async () => { const newName = inp.value.trim(); if (!newName || newName === item.name) { m.remove(); return; } if (S.items.some(i => i.name === newName)) { showAlert(L.msg_name_exists.replace('{n}', newName)); return; } m.remove(); try { setLoad(true); await apiAction(`/${id}`, { name: newName }); await sleep(200); setLoad(false); load(); } catch (e) { showAlert("Error: " + e.message); setLoad(false); } }; m.querySelector('#rn_cancel').onclick = () => m.remove(); m.querySelector('#rn_confirm').onclick = doRename; inp.onkeydown = (e) => { if (e.key === 'Enter') doRename(); if (e.key === 'Escape') { m.remove(); e.stopPropagation(); } }; };
     UI.btnBulkRename.onclick = () => { if (S.sel.size < 2) return; const m = showModal(`<h3>${L.modal_rename_multi_title}</h3><div class="pk-field"><label><input type="radio" name="rn_mode" value="pattern" checked> ${L.label_pattern}</label><input type="text" id="rn_pattern" value="Video {n}" placeholder="Video {n}"></div><div class="pk-field" style="margin-top:10px"><label><input type="radio" name="rn_mode" value="replace"> ${L.label_replace} <span style="font-size:11px;color:#888">${L.label_replace_note}</span></label><input type="text" id="rn_find" placeholder="${L.placeholder_find}" disabled><input type="text" id="rn_rep" placeholder="${L.placeholder_replace}" disabled></div><div class="pk-modal-act"><button class="pk-btn" id="rn_cancel">${L.btn_cancel}</button><button class="pk-btn pri" id="rn_preview">${L.btn_preview}</button></div>`); const radios = m.querySelectorAll('input[name="rn_mode"]'); const inpPattern = m.querySelector('#rn_pattern'); const inpFind = m.querySelector('#rn_find'); const inpRep = m.querySelector('#rn_rep'); radios.forEach(r => r.onchange = () => { const isPat = r.value === 'pattern'; inpPattern.disabled = !isPat; inpFind.disabled = isPat; inpRep.disabled = isPat; }); m.querySelector('#rn_cancel').onclick = () => m.remove(); m.querySelector('#rn_preview').onclick = () => { const mode = m.querySelector('input[name="rn_mode"]:checked').value; const pattern = inpPattern.value; const findStr = inpFind.value; const repStr = inpRep.value || ''; let idx = 1; const changes = []; const existingNames = new Set(S.items.map(i => i.name)); for (const id of S.sel) { const item = S.items.find(x => x.id === id); if (!item) continue; let base = item.name; let ext = ""; if (item.kind !== 'drive#folder' && item.name.lastIndexOf('.') > 0) { base = item.name.substring(0, item.name.lastIndexOf('.')); ext = item.name.substring(item.name.lastIndexOf('.')); } let newBase = base; if (mode === 'pattern') { if (pattern) newBase = pattern.replace(/\{n\}/g, idx++); } else { if (findStr && base.includes(findStr)) newBase = base.split(findStr).join(repStr); } const finalName = newBase + ext; if (finalName !== item.name) { if (existingNames.has(finalName)) { showAlert(L.msg_name_exists.replace('{n}', finalName)); return; } changes.push({ id: item.id, old: item.name, new: finalName }); } } m.remove(); if (changes.length === 0) { showAlert("No changes detected."); return; } let rowsHtml = changes.map(c => `<div class="pk-prev-row"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.old)}</div><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--pk-pri)">${esc(c.new)}</div></div>`).join(''); const p = showModal(`<h3>${L.modal_preview_title} (${changes.length})</h3><div class="pk-prev-list"><div class="pk-prev-row" style="font-weight:bold;background:#eee"><div>${L.col_old}</div><div>${L.col_new}</div></div>${rowsHtml}</div><div class="pk-modal-act"><button class="pk-btn" id="pr_cancel">${L.btn_cancel}</button><button class="pk-btn pri" id="pr_confirm">${L.btn_confirm}</button></div>`); p.querySelector('#pr_cancel').onclick = () => p.remove(); p.querySelector('#pr_confirm').onclick = async () => { setLoad(true); let count = 0; try { for (const c of changes) { await apiAction(`/${c.id}`, { name: c.new }); count++; await sleep(50); } showAlert(L.msg_bulkrename_done.replace('{n}', count)); load(); } catch (e) { showAlert("Rename Error: " + e.message); } finally { setLoad(false); p.remove(); } }; }; };
@@ -446,6 +571,41 @@ async function openManager() {
     UI.win.querySelector('#pk-aria2').onclick = async () => { const files = await getLinks(); if (!files.length) { showAlert(L.msg_download_fail); return; } const ariaUrl = gmGet('pk_aria2_url', 'ws://localhost:6800/jsonrpc'); const ariaToken = gmGet('pk_aria2_token', ''); const payload = files.map(f => ({ jsonrpc: '2.0', method: 'aria2.addUri', id: f.id, params: [`token:${ariaToken}`, [f.web_content_link], { out: f.name }] })); try { await fetch(ariaUrl, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } }); showAlert(L.msg_aria2_sent.replace('{n}', files.length)); } catch (e) { showAlert('Aria2 Error. Check Settings.'); } };
     UI.btnDel.onclick = async () => { if (!S.sel.size) return; if (await showConfirm(L.warn_del.replace('{n}', S.sel.size))) { await fetch(`https://api-drive.mypikpak.com/drive/v1/files:batchTrash`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ ids: Array.from(S.sel) }) }); await sleep(500); if (!S.scanning) load(); else { S.items = S.items.filter(i => !S.sel.has(i.id)); refresh(); } } };
     UI.btnDeselect.onclick = () => { S.sel.clear(); refresh(); };
+
+    if (UI.btnViewToggle) {
+        UI.btnViewToggle.onclick = () => {
+            S.view = S.view === 'list' ? 'grid' : 'list';
+            gmSet('pk_view_mode', S.view);
+            UI.btnViewToggle.innerHTML = S.view === 'list' ? CONF.icons.grid_view : CONF.icons.list_view;
+            UI.btnViewToggle.title = S.view === 'list' ? L.btn_view_grid : L.btn_view_list;
+            render();
+        };
+    }
+
+    if (UI.btnLinkCopy) {
+        UI.btnLinkCopy.onclick = async () => {
+            if (S.sel.size === 0) { showToast(L.msg_no_selection || "선택된 항목이 없습니다."); return; }
+            setLoad(true);
+            try {
+                const links = await getLinks();
+                if (!links.length) { showToast(L.msg_download_fail); return; }
+
+                const text = links.map(f => f.web_content_link).join('\n');
+
+                if (typeof GM_setClipboard !== 'undefined') {
+                    GM_setClipboard(text);
+                } else {
+                    await navigator.clipboard.writeText(text);
+                }
+                showToast(L.msg_link_copied.replace('{n}', links.length));
+            } catch (e) {
+                console.error(e);
+                showToast("복사 실패");
+            } finally {
+                setLoad(false);
+            }
+        };
+    }
 
     UI.btnSettings.onclick = () => {
         const curLang = gmGet('pk_lang', lang);
