@@ -27,7 +27,7 @@ const header = `// ==UserScript==
 `;
 
 module.exports = {
-    entry: './src/main.js',
+    entry: './src/index.js',
     output: {
         filename: 'PikPak_FileManager.user.js',
         path: path.resolve(__dirname, 'user.js'),
