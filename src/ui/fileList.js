@@ -4,6 +4,7 @@ import { CONF } from '../config';
 import { esc, fmtSize, fmtDate, fmtDur } from '../utils';
 import { AppState } from '../core/state';
 import { UI } from './layout';
+import { getStrings } from '../languages';
 
 // 핸들러 저장소
 let _h = null;
@@ -72,6 +73,7 @@ export function renderVisibleList() {
         } else {
             const isSel = sel.has(d.id);
             row.className = `pk-row ${isSel ? 'sel' : ''}`;
+            row.dataset.id = d.id;
             const durVal = d.params?.duration || d.medias?.[0]?.duration || d.video_media_metadata?.duration || '';
             row.innerHTML = `<div><input type="checkbox" ${isSel ? 'checked' : ''}></div><div class="pk-name" title="${esc(d.name)}">${getIcon(d)}<span>${esc(d.name)}</span></div><div>${d.kind === 'drive#folder' ? '' : fmtSize(d.size)}</div><div>${fmtDur(durVal)}</div><div style="color:#888">${fmtDate(d.modified_time)}</div>`;
             if (_h) {
@@ -82,6 +84,7 @@ export function renderVisibleList() {
                 row.onmouseenter = (e) => _h.onRowEnter(e, d);
                 row.onmouseleave = () => _h.onRowLeave();
             }
+            applyDragDrop(row, d);
         }
         UI.in.appendChild(row);
     }
@@ -90,9 +93,16 @@ export function renderVisibleList() {
 export function renderGrid() {
     if (AppState.get('view') !== 'grid') return;
     const display = AppState.get('display');
-    const gap = 10, padding = 10, cardH = 200, containerW = UI.vp.clientWidth - (padding * 2), minCardW = 140;
-    const cols = Math.floor((containerW + gap) / (minCardW + gap)) || 1;
+    const zoom = AppState.get('gridZoom') || 140;
+
+    const gap = 10, padding = 10, containerW = UI.vp.clientWidth - (padding * 2);
+    const cols = Math.floor((containerW + gap) / (zoom + gap)) || 1;
     const cardW = (containerW - (cols - 1) * gap) / cols;
+    const thumbH = Math.floor(cardW * 0.75); // 4:3 aspect ratio
+    const cardH = thumbH + 56; // 56px for padding and text
+
+    UI.in.style.setProperty('--pk-thumb-h', `${thumbH}px`);
+
     const visibleItems = display.filter(d => !d.isHeader);
     const totalRows = Math.ceil(visibleItems.length / cols);
     UI.in.style.height = `${totalRows * (cardH + gap)}px`;
@@ -115,6 +125,7 @@ export function renderVisibleGrid() {
             const d = items[idx], isSel = sel.has(d.id);
             const card = document.createElement('div');
             card.className = `pk-card ${isSel ? 'sel' : ''}`;
+            card.dataset.id = d.id;
             card.style.cssText = `width:${cardW}px;height:${cardH}px;left:${10 + c * (cardW + gap)}px;top:${10 + r * (cardH + gap)}px`;
             let thumb = getIcon(d);
             if (d.kind !== 'drive#folder' && d.thumbnail_link) thumb = `<img src="${d.thumbnail_link}" loading="lazy" decoding="async">`;
@@ -125,6 +136,7 @@ export function renderVisibleGrid() {
                 card.ondblclick = (e) => _h.onCardDblClick(e, d);
                 card.oncontextmenu = (e) => _h.onCardContext(e, d, card);
             }
+            applyDragDrop(card, d);
             UI.in.appendChild(card);
         }
     }
@@ -135,4 +147,44 @@ export function initScrollHandler() {
         if (AppState.get('view') === 'list') renderVisibleList();
         else renderGrid();
     };
+}
+
+function applyDragDrop(el, d) {
+    el.setAttribute('draggable', 'true');
+    el.ondragstart = (e) => {
+        const sel = AppState.get('sel');
+        if (!sel.has(d.id)) {
+            sel.add(d.id);
+            AppState.setState({ sel: sel });
+            requestAnimationFrame(() => {
+                if (AppState.get('view') === 'list') renderVisibleList(); else renderVisibleGrid();
+            });
+        }
+        const ids = [...sel];
+        e.dataTransfer.setData('application/pfm-ids', JSON.stringify(ids));
+        e.dataTransfer.effectAllowed = 'move';
+
+        const L = getStrings();
+        const ghost = document.createElement('div');
+        ghost.className = 'pk-drag-ghost';
+        ghost.textContent = L.drag_move_count ? L.drag_move_count.replace('{n}', ids.length) : `${ids.length}`;
+        document.body.appendChild(ghost);
+        e.dataTransfer.setDragImage(ghost, -10, -10);
+        requestAnimationFrame(() => ghost.remove());
+    };
+
+    if (d.kind === 'drive#folder') {
+        el.ondragover = (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; el.classList.add('pk-drop-over'); };
+        el.ondragleave = () => { el.classList.remove('pk-drop-over'); };
+        el.ondrop = (e) => {
+            e.preventDefault();
+            el.classList.remove('pk-drop-over');
+            const raw = e.dataTransfer.getData('application/pfm-ids');
+            if (raw && _h && _h.onDrop) {
+                try {
+                    _h.onDrop(JSON.parse(raw), d.id);
+                } catch (err) { }
+            }
+        };
+    }
 }

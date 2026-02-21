@@ -10,7 +10,7 @@ const _state = {
     dupSizeStrategy: 'small', dupDateStrategy: 'old',
     clipItems: [], clipType: '', clipSourceParentId: null,
     loading: false, lastSelIdx: -1, search: '',
-    view: 'list',
+    view: 'list', gridZoom: 140,
 };
 const _listeners = new Map();
 export const AppState = {

@@ -8,6 +8,8 @@ import { initModal, showModal, showToast, showAlert, showConfirm, showPrompt } f
 import { createLayout, UI, setLoading, updateLoadingText, updateStat, updateNavState } from './ui/layout';
 import { render, renderList, renderGrid, getIcon, setHandlers, initScrollHandler } from './ui/fileList';
 import { injectStyles } from './ui/style';
+import { DEFAULT_FILTER, applyFilter, countActiveFilters, createFilterPanelHTML, readFilterFromPanel } from './features/filter';
+import { initSidebar, highlightFolder, invalidateFolder } from './ui/sidebar';
 import pkg from '../package.json';
 const { version } = pkg;
 
@@ -21,7 +23,7 @@ function syncState(S) {
         scanning: S.scanning, dupMode: S.dupMode, dupRunning: S.dupRunning,
         dupReasons: S.dupReasons, dupGroups: S.dupGroups,
         dupSizeStrategy: S.dupSizeStrategy, dupDateStrategy: S.dupDateStrategy,
-        lastSelIdx: S.lastSelIdx, search: S.search,
+        lastSelIdx: S.lastSelIdx, search: S.search, gridZoom: S.gridZoom,
     });
 }
 
@@ -39,7 +41,11 @@ export async function openManager() {
         dupSizeStrategy: 'small', dupDateStrategy: 'old',
         clipItems: [], clipType: '', clipSourceParentId: null,
         loading: false, lastSelIdx: -1, search: '',
-        view: gmGet('pk_view_mode', 'list')
+        view: gmGet('pk_view_mode', 'list'),
+        gridZoom: parseInt(gmGet('pk_grid_zoom', '140'), 10),
+        foldersFirst: gmGet('pk_folders_first', 'true') === 'true',
+        filter: { ...DEFAULT_FILTER },
+        filterActive: false
     };
     syncState(S);
 
@@ -47,6 +53,57 @@ export async function openManager() {
     const el = createLayout(L, lang, version);
     initModal(UI.win, L);
     injectStyles();
+
+    // ── 사이드바 초기화 ──
+    const sidebarOpen = gmGet('pk_sidebar_open', 'false') === 'true';
+    if (sidebarOpen) {
+        UI.sidebarEl.classList.add('open');
+        UI.sidebarToggle.classList.add('active');
+    }
+    initSidebar(UI.sidebarEl, L,
+        // onNavigate: 폴더 클릭 시
+        (folderId, folderName) => {
+            if (S.loading) return;
+            S.history.push({ path: [...S.path] });
+            S.forward = [];
+            if (!folderId) {
+                S.path = [{ id: '', name: L.sidebar_home }];
+            } else {
+                S.path = [{ id: '', name: L.sidebar_home }, { id: folderId, name: folderName }];
+            }
+            load();
+        },
+        // onDrop: 드래그앤드롭으로 파일 이동
+        async (ids, targetFolderId) => {
+            const currentFolderId = S.path[S.path.length - 1].id || '';
+            if (ids.includes(targetFolderId)) {
+                showToast(L.drag_move_same);
+                return;
+            }
+            try {
+                setLoad(true);
+                await fetch('https://api-drive.mypikpak.com/drive/v1/files:batchMove', {
+                    method: 'POST', headers: getHeaders(),
+                    body: JSON.stringify({ ids: ids, to: { parent_id: targetFolderId } })
+                });
+                showToast(L.drag_move_done.replace('{n}', ids.length));
+                invalidateFolder(targetFolderId);
+                S.items = S.items.filter(i => !ids.includes(i.id));
+                ids.forEach(id => S.sel.delete(id));
+                refresh();
+            } catch (e) {
+                showAlert(L.drag_move_fail.replace('{e}', e.message));
+            } finally {
+                setLoad(false);
+            }
+        }
+    );
+    // 사이드바 토글 버튼
+    UI.sidebarToggle.onclick = () => {
+        const isOpen = UI.sidebarEl.classList.toggle('open');
+        UI.sidebarToggle.classList.toggle('active', isOpen);
+        gmSet('pk_sidebar_open', isOpen ? 'true' : 'false');
+    };
 
     // ── 헬퍼 ──
     const setLoad = (b) => { S.loading = b; setLoading(b, L); };
@@ -59,8 +116,23 @@ export async function openManager() {
     setHandlers({
         onRowClick(e, d, i, chk) {
             if (S.loading) return;
-            if (e.shiftKey && S.lastSelIdx !== -1) { const s = Math.min(S.lastSelIdx, i), end = Math.max(S.lastSelIdx, i); for (let k = s; k <= end; k++) { if (!S.display[k].isHeader) S.sel.add(S.display[k].id); } }
-            else { if (e.target !== chk) chk.checked = !chk.checked; if (chk.checked) S.sel.add(d.id); else S.sel.delete(d.id); S.lastSelIdx = i; }
+            if (e.target.tagName === 'INPUT') {
+                if (chk.checked) S.sel.add(d.id); else S.sel.delete(d.id);
+                S.lastSelIdx = i;
+            } else if (e.shiftKey && S.lastSelIdx !== -1) {
+                const s = Math.min(S.lastSelIdx, i), end = Math.max(S.lastSelIdx, i);
+                for (let k = s; k <= end; k++) {
+                    if (!S.display[k].isHeader) S.sel.add(S.display[k].id);
+                }
+            } else if (e.ctrlKey || e.metaKey) {
+                chk.checked = !chk.checked;
+                if (chk.checked) S.sel.add(d.id); else S.sel.delete(d.id);
+                S.lastSelIdx = i;
+            } else {
+                S.sel.clear();
+                S.sel.add(d.id);
+                S.lastSelIdx = i;
+            }
             syncState(S); renderList(); _updateStat();
         },
         onRowDblClick(e, d) {
@@ -89,11 +161,25 @@ export async function openManager() {
         onRowLeave() { UI.pop.style.display = 'none'; },
         onCardClick(e, d, idx, chk, card) {
             if (S.loading) return;
-            if (e.target !== chk) chk.checked = !chk.checked;
-            if (chk.checked) S.sel.add(d.id); else S.sel.delete(d.id);
-            S.lastSelIdx = idx;
-            if (chk.checked) card.classList.add('sel'); else card.classList.remove('sel');
-            _updateStat();
+            if (e.target.tagName === 'INPUT') {
+                if (chk.checked) S.sel.add(d.id); else S.sel.delete(d.id);
+                S.lastSelIdx = idx;
+            } else if (e.shiftKey && S.lastSelIdx !== -1) {
+                const visibleItems = S.display.filter(v => !v.isHeader);
+                const s = Math.min(S.lastSelIdx, idx), end = Math.max(S.lastSelIdx, idx);
+                for (let k = s; k <= end; k++) {
+                    S.sel.add(visibleItems[k].id);
+                }
+            } else if (e.ctrlKey || e.metaKey) {
+                chk.checked = !chk.checked;
+                if (chk.checked) S.sel.add(d.id); else S.sel.delete(d.id);
+                S.lastSelIdx = idx;
+            } else {
+                S.sel.clear();
+                S.sel.add(d.id);
+                S.lastSelIdx = idx;
+            }
+            syncState(S); renderGrid(); _updateStat();
         },
         onCardDblClick(e, d) {
             e.preventDefault(); if (S.loading) return;
@@ -105,6 +191,30 @@ export async function openManager() {
             if (!S.sel.has(d.id)) { S.sel.clear(); S.sel.add(d.id); card.classList.add('sel'); _updateStat(); }
             UI.ctx.style.display = 'block'; UI.ctx.style.left = e.clientX + 'px'; UI.ctx.style.top = e.clientY + 'px';
         },
+        async onDrop(ids, targetFolderId) {
+            const currentFolderId = S.path[S.path.length - 1].id || '';
+            if (ids.includes(targetFolderId)) {
+                showToast(L.drag_move_same);
+                return;
+            }
+            try {
+                setLoad(true);
+                await fetch('https://api-drive.mypikpak.com/drive/v1/files:batchMove', {
+                    method: 'POST', headers: getHeaders(),
+                    body: JSON.stringify({ ids: ids, to: { parent_id: targetFolderId } })
+                });
+                showToast(L.drag_move_done.replace('{n}', ids.length));
+                // 타겟 폴더 트리 UI 갱신 (있다면)
+                invalidateFolder(targetFolderId);
+                S.items = S.items.filter(i => !ids.includes(i.id));
+                ids.forEach(id => S.sel.delete(id));
+                refresh();
+            } catch (e) {
+                showAlert(L.drag_move_fail.replace('{e}', e.message));
+            } finally {
+                setLoad(false);
+            }
+        }
     });
     initScrollHandler();
 
@@ -135,6 +245,8 @@ export async function openManager() {
         UI.scan.style.display = 'flex'; UI.dup.style.display = 'none'; UI.dupTools.style.display = 'none';
         S.dupMode = false; S.lastSelIdx = -1;
         renderCrumb();
+        // 사이드바 현재 폴더 하이라이트
+        highlightFolder(cur.id || '');
         try {
             if (!S.scanning) {
                 updateLoadTxt(L.loading_detail);
@@ -149,6 +261,10 @@ export async function openManager() {
     async function refresh() {
         if (S.search) { const q = S.search.toLowerCase(); S.display = S.items.filter(i => i.name.toLowerCase().includes(q)); }
         else { S.display = [...S.items]; }
+        // 필터 적용
+        if (S.filterActive && countActiveFilters(S.filter) > 0) {
+            S.display = applyFilter(S.display, S.filter);
+        }
         S.dupReasons.clear(); S.dupGroups.clear();
         if (S.dupMode) {
             setLoad(true); S.dupRunning = true; UI.stopBtn.onclick = () => { S.dupRunning = false; };
@@ -184,10 +300,21 @@ export async function openManager() {
         } else {
             UI.dupTools.style.display = 'none';
             S.display.sort((a, b) => {
-                if (a.kind !== b.kind) return a.kind === 'drive#folder' ? -1 : 1;
-                let va = a[S.sort], vb = b[S.sort];
-                if (S.sort === 'size') { va = parseInt(va || 0); vb = parseInt(vb || 0); }
-                else if (S.sort === 'duration') { va = parseInt(a.params?.duration || 0); vb = parseInt(b.params?.duration || 0); }
+                if (S.foldersFirst && a.kind !== b.kind) return a.kind === 'drive#folder' ? -1 : 1;
+                let va, vb;
+                if (S.sort === 'ext') {
+                    va = (a.name || '').split('.').pop().toLowerCase();
+                    vb = (b.name || '').split('.').pop().toLowerCase();
+                } else if (S.sort === 'created_time') {
+                    va = a.created_time || a.modified_time || '';
+                    vb = b.created_time || b.modified_time || '';
+                } else if (S.sort === 'size') {
+                    va = parseInt(a.size || 0); vb = parseInt(b.size || 0);
+                } else if (S.sort === 'duration') {
+                    va = parseInt(a.params?.duration || 0); vb = parseInt(b.params?.duration || 0);
+                } else {
+                    va = a[S.sort]; vb = b[S.sort];
+                }
                 if (va > vb) return S.dir; if (va < vb) return -S.dir; return 0;
             });
         }
@@ -204,7 +331,7 @@ export async function openManager() {
         let link = item.web_content_link; if (!link) { try { const m = await apiGet(item.id); link = m.web_content_link; } catch (e) { console.error(e); } }
         if (!link) { showAlert(L.msg_video_fail || "Cannot fetch video link."); return; }
         const d = document.createElement('div'); d.id = 'pk-player-ov'; d.tabIndex = 0;
-        d.innerHTML = `<div style="position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,0.95);backdrop-filter:blur(5px);display:flex;justify-content:center;align-items:center;"><div style="width:95vw;height:95vh;max-width:1600px;background:#000;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,0.8);display:flex;flex-direction:column;overflow:hidden;border:1px solid #333;"><div style="flex:0 0 40px;background:#1a1a1a;padding:0 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #333;"><span style="color:#ddd;font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(item.name)}</span><button class="pk-close-btn" style="color:#aaa;background:none;border:none;font-size:24px;cursor:pointer;width:30px;height:30px;display:flex;align-items:center;justify-content:center;">×</button></div><div style="flex:1;background:#000;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;"><video src="${link}" controls autoplay playsinline preload="auto" style="width:100%;height:100%;object-fit:contain;outline:none;" onerror="alert('Video Load Failed.');"></video></div></div><style>.pk-close-btn:hover{color:#fff}</style></div>`;
+        d.innerHTML = `<div style="position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,0.95);backdrop-filter:blur(5px);display:flex;justify-content:center;align-items:center;"><div style="width:95vw;height:95vh;max-width:1600px;background:#000;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,0.8);display:flex;flex-direction:column;overflow:hidden;border:1px solid #333;"><div style="flex:0 0 40px;background:#1a1a1a;padding:0 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #333;"><span style="color:#ddd;font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(item.name)}</span><button class="pk-close-btn" style="color:#aaa;background:none;border:none;font-size:24px;cursor:pointer;width:30px;height:30px;display:flex;align-items:center;justify-content:center;">×</button></div><div style="flex:1;background:#000;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;"><video src="${link}" controls autoplay playsinline preload="auto" style="width:100%;height:100%;object-fit:contain;outline:none;" onerror=\"this.parentElement.innerHTML='<div style=color:#f55;padding:20px;text-align:center>Video Load Failed.</div>';\"></video></div></div><style>.pk-close-btn:hover{color:#fff}</style></div>`;
         document.body.appendChild(d); d.focus(); d.onkeydown = (e) => { if (e.key === 'Escape') { d.remove(); e.stopPropagation(); } }; d.querySelector('.pk-close-btn').onclick = () => d.remove(); d.onclick = (e) => { if (e.target === d.firstElementChild) d.remove(); };
     }
 
@@ -228,6 +355,58 @@ export async function openManager() {
     const mouseHandler = (e) => { if (!document.querySelector('.pk-ov')) return; if (e.button === 3) { e.preventDefault(); e.stopPropagation(); goBack(); } if (e.button === 4) { e.preventDefault(); e.stopPropagation(); goForward(); } if (UI.ctx.style.display === 'block' && !UI.ctx.contains(e.target)) UI.ctx.style.display = 'none'; };
     document.addEventListener('mouseup', mouseHandler);
 
+    // ── 올가미(Lasso) 드래그 선택 ──
+    const lassoEl = document.createElement('div');
+    lassoEl.className = 'pk-lasso';
+    lassoEl.style.display = 'none';
+    document.body.appendChild(lassoEl);
+    let lassoActive = false, lassoStartX = 0, lassoStartY = 0, lassoInitSel = new Set();
+    UI.vp.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return;
+        if (e.target.closest('.pk-row') || e.target.closest('.pk-card') || e.target.closest('.pk-grid-hd')) return;
+        lassoActive = true;
+        lassoStartX = e.clientX; lassoStartY = e.clientY;
+        lassoEl.style.left = lassoStartX + 'px';
+        lassoEl.style.top = lassoStartY + 'px';
+        lassoEl.style.width = '0px';
+        lassoEl.style.height = '0px';
+        lassoEl.style.display = 'block';
+        if (!e.shiftKey && !e.ctrlKey && !e.metaKey) { S.sel.clear(); _render(); _updateStat(); }
+        lassoInitSel = new Set(S.sel);
+        document.body.style.userSelect = 'none';
+    });
+    document.addEventListener('mousemove', (e) => {
+        if (!lassoActive) return;
+        const cx = e.clientX, cy = e.clientY;
+        const left = Math.min(lassoStartX, cx), top = Math.min(lassoStartY, cy);
+        const width = Math.abs(cx - lassoStartX), height = Math.abs(cy - lassoStartY);
+        lassoEl.style.left = left + 'px'; lassoEl.style.top = top + 'px';
+        lassoEl.style.width = width + 'px'; lassoEl.style.height = height + 'px';
+
+        const lr = lassoEl.getBoundingClientRect();
+        const items = S.view === 'list' ? UI.in.querySelectorAll('.pk-row:not(.pk-group-hd)') : UI.in.querySelectorAll('.pk-card');
+        items.forEach(el => {
+            const id = el.dataset.id;
+            if (!id) return;
+            const r = el.getBoundingClientRect();
+            const intersect = !(lr.right < r.left || lr.left > r.right || lr.bottom < r.top || lr.top > r.bottom);
+            const shouldSelect = lassoInitSel.has(id) || intersect;
+            if (shouldSelect) {
+                if (!S.sel.has(id)) { S.sel.add(id); el.classList.add('sel'); const chk = el.querySelector('input'); if (chk) chk.checked = true; }
+            } else {
+                if (S.sel.has(id)) { S.sel.delete(id); el.classList.remove('sel'); const chk = el.querySelector('input'); if (chk) chk.checked = false; }
+            }
+        });
+        _updateStat();
+    });
+    document.addEventListener('mouseup', () => {
+        if (lassoActive) {
+            lassoActive = false;
+            lassoEl.style.display = 'none';
+            document.body.style.userSelect = '';
+        }
+    });
+
     // ── 이벤트 연결 ──
     if (UI.searchInput) { UI.searchInput.oninput = (e) => { S.search = e.target.value.trim(); refresh(); }; UI.searchInput.onkeydown = (e) => { e.stopPropagation(); }; }
     UI.btnHelp.onclick = () => { const m = showModal(`<h3>${L.modal_help_title}</h3>${L.help_desc}<div class="pk-modal-act" style="margin-top:20px;"><button class="pk-btn pri" id="help_close" style="width:100%;justify-content:center;height:40px;">닫기</button></div>`); m.querySelector('#help_close').onclick = () => m.remove(); };
@@ -236,6 +415,47 @@ export async function openManager() {
     UI.btnDupSize.onclick = () => { S.dupSizeStrategy = S.dupSizeStrategy === 'small' ? 'large' : 'small'; UI.condSize.textContent = `(${S.dupSizeStrategy === 'small' ? L.cond_small : L.cond_large})`; S.sel.clear(); const itemMap = new Map(); S.display.forEach(d => { if (d.isHeader) return; const gIdx = S.dupGroups.get(d.id); if (gIdx !== undefined) { if (!itemMap.has(gIdx)) itemMap.set(gIdx, []); itemMap.get(gIdx).push(d); } }); itemMap.forEach(items => { if (items.length < 2) return; let keep = (S.dupSizeStrategy === 'small') ? items.reduce((a, b) => parseInt(a.size) > parseInt(b.size) ? a : b) : items.reduce((a, b) => parseInt(a.size) < parseInt(b.size) ? a : b); items.forEach(i => { if (i.id !== keep.id) S.sel.add(i.id); }); }); _render(); _updateStat(); };
     UI.btnDupDate.onclick = () => { S.dupDateStrategy = S.dupDateStrategy === 'old' ? 'new' : 'old'; UI.condDate.textContent = `(${S.dupDateStrategy === 'old' ? L.cond_old : L.cond_new})`; S.sel.clear(); const itemMap = new Map(); S.display.forEach(d => { if (d.isHeader) return; const gIdx = S.dupGroups.get(d.id); if (gIdx !== undefined) { if (!itemMap.has(gIdx)) itemMap.set(gIdx, []); itemMap.get(gIdx).push(d); } }); itemMap.forEach(items => { if (items.length < 2) return; let keep = (S.dupDateStrategy === 'old') ? items.reduce((a, b) => new Date(a.modified_time) > new Date(b.modified_time) ? a : b) : items.reduce((a, b) => new Date(a.modified_time) < new Date(b.modified_time) ? a : b); items.forEach(i => { if (i.id !== keep.id) S.sel.add(i.id); }); }); _render(); _updateStat(); };
     UI.cols.forEach(c => c.onclick = () => { const k = c.dataset.k; if (S.sort === k) S.dir *= -1; else { S.sort = k; S.dir = 1; } refresh(); });
+
+    // ── 필터 패널 토글 ──
+    const _updateFilterBadge = () => {
+        const n = countActiveFilters(S.filter);
+        const existing = UI.filterToggle.querySelector('.pk-filter-badge');
+        if (existing) existing.remove();
+        if (S.filterActive && n > 0) {
+            const badge = document.createElement('span');
+            badge.className = 'pk-filter-badge'; badge.textContent = n;
+            UI.filterToggle.appendChild(badge);
+        }
+    };
+    const _initFilterPanel = () => {
+        UI.filterArea.innerHTML = createFilterPanelHTML(L, S.filter);
+        const panel = UI.filterArea.querySelector('.pk-filter-panel');
+        panel.classList.add('open');
+        panel.querySelectorAll('.pk-filter-chip').forEach(ch => {
+            ch.onclick = () => ch.classList.toggle('active');
+        });
+        panel.querySelector('#pk-filter-apply').onclick = () => {
+            S.filter = readFilterFromPanel(panel);
+            S.filterActive = countActiveFilters(S.filter) > 0;
+            _updateFilterBadge();
+            refresh();
+        };
+        panel.querySelector('#pk-filter-reset').onclick = () => {
+            S.filter = { ...DEFAULT_FILTER };
+            S.filterActive = false;
+            _updateFilterBadge();
+            _initFilterPanel();
+            refresh();
+        };
+    };
+    UI.filterToggle.onclick = () => {
+        let panel = UI.filterArea.querySelector('.pk-filter-panel');
+        if (panel) {
+            panel.classList.toggle('open');
+            return;
+        }
+        _initFilterPanel();
+    };
     UI.chkAll.onclick = (e) => { if (e.target.checked) S.display.forEach(i => S.sel.add(i.id)); else S.sel.clear(); _render(); _updateStat(); };
     UI.btnBack.onclick = goBack; UI.btnFwd.onclick = goForward; UI.btnRefresh.onclick = () => load();
     UI.btnNewFolder.onclick = async () => { const name = await showPrompt(L.msg_newfolder_prompt, ''); if (!name) return; const cur = S.path[S.path.length - 1]; try { await fetch('https://api-drive.mypikpak.com/drive/v1/files', { method: 'POST', headers: getHeaders(), body: JSON.stringify({ kind: 'drive#folder', parent_id: cur.id || '', name: name }) }); load(); } catch (e) { showAlert('Error: ' + e.message); } };
@@ -250,9 +470,26 @@ export async function openManager() {
     UI.win.querySelector('#pk-aria2').onclick = async () => { const files = await getLinks(); if (!files.length) { showAlert(L.msg_download_fail); return; } const ariaUrl = gmGet('pk_aria2_url', 'ws://localhost:6800/jsonrpc'); const ariaToken = gmGet('pk_aria2_token', ''); const payload = files.map(f => ({ jsonrpc: '2.0', method: 'aria2.addUri', id: f.id, params: [`token:${ariaToken}`, [f.web_content_link], { out: f.name }] })); try { await fetch(ariaUrl, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } }); showAlert(L.msg_aria2_sent.replace('{n}', files.length)); } catch (e) { showAlert('Aria2 Error. Check Settings.'); } };
     UI.btnDel.onclick = async () => { if (!S.sel.size) return; if (await showConfirm(L.warn_del.replace('{n}', S.sel.size))) { await fetch(`https://api-drive.mypikpak.com/drive/v1/files:batchTrash`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ ids: Array.from(S.sel) }) }); await sleep(500); if (!S.scanning) load(); else { S.items = S.items.filter(i => !S.sel.has(i.id)); refresh(); } } };
     UI.btnDeselect.onclick = () => { S.sel.clear(); refresh(); };
-    if (UI.btnViewToggle) { UI.btnViewToggle.onclick = () => { S.view = S.view === 'list' ? 'grid' : 'list'; gmSet('pk_view_mode', S.view); UI.btnViewToggle.innerHTML = S.view === 'list' ? CONF.icons.grid_view : CONF.icons.list_view; UI.btnViewToggle.title = S.view === 'list' ? L.btn_view_grid : L.btn_view_list; _render(); }; }
+    if (UI.btnViewToggle) {
+        UI.btnViewToggle.onclick = () => {
+            S.view = S.view === 'list' ? 'grid' : 'list';
+            gmSet('pk_view_mode', S.view);
+            UI.btnViewToggle.innerHTML = S.view === 'list' ? CONF.icons.grid_view : CONF.icons.list_view;
+            UI.btnViewToggle.title = S.view === 'list' ? L.btn_view_grid : L.btn_view_list;
+            if (UI.gridZoom) UI.gridZoom.style.display = S.view === 'grid' ? 'inline-block' : 'none';
+            _render();
+        };
+    }
+    if (UI.gridZoom) {
+        UI.gridZoom.oninput = (e) => {
+            S.gridZoom = parseInt(e.target.value, 10);
+            gmSet('pk_grid_zoom', S.gridZoom.toString());
+            syncState(S);
+            renderGrid();
+        };
+    }
     if (UI.btnLinkCopy) { UI.btnLinkCopy.onclick = async () => { if (S.sel.size === 0) { showToast(L.msg_no_selection || "선택된 항목이 없습니다."); return; } setLoad(true); try { const links = await getLinks(); if (!links.length) { showToast(L.msg_download_fail); return; } const text = links.map(f => f.web_content_link).join('\n'); if (typeof GM_setClipboard !== 'undefined') { GM_setClipboard(text); } else { await navigator.clipboard.writeText(text); } showToast(L.msg_link_copied.replace('{n}', links.length)); } catch (e) { console.error(e); showToast("복사 실패"); } finally { setLoad(false); } }; }
-    UI.btnSettings.onclick = () => { const curLang = gmGet('pk_lang', lang); const curPlayer = gmGet('pk_ext_player', 'system'); const curAriaUrl = gmGet('pk_aria2_url', ''); const curAriaToken = gmGet('pk_aria2_token', ''); const m = showModal(`<h3>${L.modal_settings_title}<div style="font-size:11px;color:#888;font-weight:normal;margin-top:4px;">PikPak File Manager v${version}</div></h3><div class="pk-field"><label>${L.label_lang}</label><select id="set_lang"><option value="ko" ${curLang === 'ko' ? 'selected' : ''}>한국어</option><option value="en" ${curLang === 'en' ? 'selected' : ''}>English</option><option value="ja" ${curLang === 'ja' ? 'selected' : ''}>日本語</option><option value="zh" ${curLang === 'zh' ? 'selected' : ''}>中文 (简体)</option></select></div><div class="pk-field"><label>${L.label_player}</label><select id="set_player"><option value="system" ${curPlayer === 'system' ? 'selected' : ''}>System Default</option><option value="potplayer" ${curPlayer === 'potplayer' ? 'selected' : ''}>PotPlayer</option><option value="vlc" ${curPlayer === 'vlc' ? 'selected' : ''}>VLC Player</option></select></div><div class="pk-field"><label>${L.label_aria2_url}</label><input type="text" id="set_aria_url" value="${esc(curAriaUrl)}" placeholder="ws://localhost:6800/jsonrpc"></div><div class="pk-field"><label>${L.label_aria2_token}</label><input type="password" id="set_aria_token" value="${esc(curAriaToken)}" placeholder="Empty"></div><div class="pk-modal-act"><button class="pk-btn" id="set_cancel">${L.btn_cancel}</button><button class="pk-btn pri" id="set_save">${L.btn_save}</button></div><div class="pk-credit"><b>제작: 브랜뉴(poihoii)</b><br><a href="https://github.com/poihoii/PikPak_FileManager" target="_blank">https://github.com/poihoii/PikPak_FileManager</a></div>`); m.querySelector('#set_cancel').onclick = () => m.remove(); m.querySelector('#set_save').onclick = async () => { const newUrl = m.querySelector('#set_aria_url').value.trim(); const newToken = m.querySelector('#set_aria_token').value.trim(); const saveBtn = m.querySelector('#set_save'); if (!newUrl && !newToken) { gmSet('pk_lang', m.querySelector('#set_lang').value); gmSet('pk_ext_player', m.querySelector('#set_player').value); gmSet('pk_aria2_url', ''); gmSet('pk_aria2_token', ''); showAlert(L.msg_settings_saved).then(() => location.reload()); return; } saveBtn.disabled = true; saveBtn.textContent = "..."; try { const payload = { jsonrpc: '2.0', method: 'aria2.getVersion', id: 'pk_test', params: [`token:${newToken}`] }; let testUrl = newUrl || "ws://localhost:6800/jsonrpc"; let fetchUrl = testUrl; if (fetchUrl.startsWith('ws')) fetchUrl = fetchUrl.replace('ws', 'http'); const res = await fetch(fetchUrl, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } }); if (!res.ok) throw new Error('Network Error'); const data = await res.json(); if (data.error) throw new Error(data.error.message); gmSet('pk_lang', m.querySelector('#set_lang').value); gmSet('pk_ext_player', m.querySelector('#set_player').value); gmSet('pk_aria2_url', newUrl); gmSet('pk_aria2_token', newToken); await showAlert(L.msg_settings_saved); location.reload(); } catch (e) { console.error(e); showAlert(L.msg_aria2_check_fail); saveBtn.disabled = false; saveBtn.textContent = L.btn_save; } }; };
+    UI.btnSettings.onclick = () => { const curLang = gmGet('pk_lang', lang); const curPlayer = gmGet('pk_ext_player', 'system'); const curAriaUrl = gmGet('pk_aria2_url', ''); const curAriaToken = gmGet('pk_aria2_token', ''); const curFoldersFirst = S.foldersFirst; const m = showModal(`<h3>${L.modal_settings_title}<div style="font-size:11px;color:#888;font-weight:normal;margin-top:4px;">PikPak File Manager v${version}</div></h3><div class="pk-field"><label>${L.label_lang}</label><select id="set_lang"><option value="ko" ${curLang === 'ko' ? 'selected' : ''}>한국어</option><option value="en" ${curLang === 'en' ? 'selected' : ''}>English</option><option value="ja" ${curLang === 'ja' ? 'selected' : ''}>日本語</option><option value="zh" ${curLang === 'zh' ? 'selected' : ''}>中文 (简体)</option></select></div><div class="pk-field"><label>${L.label_player}</label><select id="set_player"><option value="system" ${curPlayer === 'system' ? 'selected' : ''}>System Default</option><option value="potplayer" ${curPlayer === 'potplayer' ? 'selected' : ''}>PotPlayer</option><option value="vlc" ${curPlayer === 'vlc' ? 'selected' : ''}>VLC Player</option></select></div><div class="pk-field" style="flex-direction:row;align-items:center;gap:8px;"><input type="checkbox" id="set_folders_first" ${curFoldersFirst ? 'checked' : ''}><label for="set_folders_first" style="cursor:pointer;user-select:none;">${L.label_folders_first}</label></div><div class="pk-field"><label>${L.label_aria2_url}</label><input type="text" id="set_aria_url" value="${esc(curAriaUrl)}" placeholder="ws://localhost:6800/jsonrpc"></div><div class="pk-field"><label>${L.label_aria2_token}</label><input type="password" id="set_aria_token" value="${esc(curAriaToken)}" placeholder="Empty"></div><div class="pk-modal-act"><button class="pk-btn" id="set_cancel">${L.btn_cancel}</button><button class="pk-btn pri" id="set_save">${L.btn_save}</button></div><div class="pk-credit"><b>제작: 브랜뉴(poihoii)</b><br><a href="https://github.com/poihoii/PikPak_FileManager" target="_blank">https://github.com/poihoii/PikPak_FileManager</a></div>`); m.querySelector('#set_cancel').onclick = () => m.remove(); m.querySelector('#set_save').onclick = async () => { const newUrl = m.querySelector('#set_aria_url').value.trim(); const newToken = m.querySelector('#set_aria_token').value.trim(); const newFoldersFirst = m.querySelector('#set_folders_first').checked; const saveBtn = m.querySelector('#set_save'); gmSet('pk_folders_first', newFoldersFirst ? 'true' : 'false'); S.foldersFirst = newFoldersFirst; if (!newUrl && !newToken) { gmSet('pk_lang', m.querySelector('#set_lang').value); gmSet('pk_ext_player', m.querySelector('#set_player').value); gmSet('pk_aria2_url', ''); gmSet('pk_aria2_token', ''); showAlert(L.msg_settings_saved).then(() => location.reload()); return; } saveBtn.disabled = true; saveBtn.textContent = "..."; try { const payload = { jsonrpc: '2.0', method: 'aria2.getVersion', id: 'pk_test', params: [`token:${newToken}`] }; let testUrl = newUrl || "ws://localhost:6800/jsonrpc"; let fetchUrl = testUrl; if (fetchUrl.startsWith('ws')) fetchUrl = fetchUrl.replace('ws', 'http'); const res = await fetch(fetchUrl, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } }); if (!res.ok) throw new Error('Network Error'); const data = await res.json(); if (data.error) throw new Error(data.error.message); gmSet('pk_lang', m.querySelector('#set_lang').value); gmSet('pk_ext_player', m.querySelector('#set_player').value); gmSet('pk_aria2_url', newUrl); gmSet('pk_aria2_token', newToken); await showAlert(L.msg_settings_saved); location.reload(); } catch (e) { console.error(e); showAlert(L.msg_aria2_check_fail); saveBtn.disabled = false; saveBtn.textContent = L.btn_save; } }; };
 
     // ── 컨텍스트 메뉴 ──
     const ctx = el.querySelector('#pk-ctx');
