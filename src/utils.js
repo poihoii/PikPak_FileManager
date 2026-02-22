@@ -17,7 +17,6 @@ export const fmtDur = s => {
     return (h > 0 ? h + ':' : '') + String(m).padStart(2, '0') + ':' + String(sc).padStart(2, '0');
 };
 
-// [추가] GM 함수 안전 래퍼
 export function gmGet(key, def) {
     if (typeof GM_getValue !== 'undefined') return GM_getValue(key, def);
     return def;
