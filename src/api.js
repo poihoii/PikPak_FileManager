@@ -10,27 +10,11 @@ export function getHeaders() {
     return { 'Content-Type': 'application/json', 'Authorization': token, 'x-device-id': localStorage.getItem('deviceid') || '', 'x-captcha-token': captcha };
 }
 
-export async function apiList(parentId, limit = 1000, onProgress, checkActive, filters = null) {
+export async function apiList(parentId, limit = 1000, onProgress) {
     let all = [], next = null, safe = 5000;
     do {
-        if (checkActive && !checkActive()) throw new Error('AbortError');
-        let filterStr = filters ? `&filters=${encodeURIComponent(JSON.stringify(filters))}` : '';
-        const url = `https://api-drive.mypikpak.com/drive/v1/files?thumbnail_size=SIZE_MEDIUM&limit=${limit}&parent_id=${parentId || ''}&with_audit=true${next ? `&page_token=${next}` : ''}${filterStr}`;
-
-        let res;
-        try {
-            const controller = new AbortController();
-            const id = setTimeout(() => controller.abort(), 15000);
-            res = await fetch(url, { headers: getHeaders(), signal: controller.signal });
-            clearTimeout(id);
-        } catch (e) {
-            if (e.name === 'AbortError') {
-                if (checkActive && !checkActive()) throw new Error('AbortError'); 
-                else throw new Error("API Request Timed Out");
-            }
-            throw e;
-        }
-
+        const url = `https://api-drive.mypikpak.com/drive/v1/files?thumbnail_size=SIZE_MEDIUM&limit=${limit}&parent_id=${parentId || ''}&with_audit=true${next ? `&page_token=${next}` : ''}`;
+        const res = await fetch(url, { headers: getHeaders() });
         if (!res.ok) { if (res.status === 429) { await sleep(2000); continue; } throw new Error("API Error " + res.status); }
         const data = await res.json();
         if (data.files) {
@@ -39,7 +23,7 @@ export async function apiList(parentId, limit = 1000, onProgress, checkActive, f
             if (onProgress) { onProgress(all.length); await sleep(0); }
         }
         next = data.next_page_token; safe--;
-    } while (next && safe > 0 && (!checkActive || checkActive()));
+    } while (next && safe > 0);
     return all;
 }
 
