@@ -1,11 +1,7 @@
-// src/ui/modal.js
-// 모달 다이얼로그 공통 컴포넌트입니다.
-// showModal, showAlert, showConfirm, showPrompt를 제공합니다.
 
 import { CONF } from '../config';
 import { esc } from '../utils';
 
-// 모달이 부착될 부모 요소 (.pk-win)
 let _parentEl = null;
 let _L = null;
 

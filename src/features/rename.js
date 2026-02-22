@@ -1,5 +1,3 @@
-// src/features/rename.js
-// 이름 변경 (단일/일괄) 기능
 
 import { ApiClient } from '../core/api';
 import { AppState } from '../core/state';
@@ -14,7 +12,6 @@ export function initRename(L, refreshFn) {
     _refreshFn = refreshFn;
 }
 
-// 단일 이름 변경
 export async function renameSingle() {
     const L = _L;
     const selectedIds = AppState.get('selectedIds');
@@ -37,7 +34,6 @@ export async function renameSingle() {
     }
 }
 
-// 일괄 이름 변경
 export async function renameBulk() {
     const L = _L;
     const selectedIds = AppState.get('selectedIds');
@@ -46,7 +42,6 @@ export async function renameBulk() {
     const items = AppState.get('items');
     const selectedFiles = items.filter(f => selectedIds.has(f.id));
 
-    // 패턴 입력
     const pattern = await showPrompt(
         L.lbl_bulk_rename || 'Pattern: {n} = number, {name} = original',
         '{name}',
@@ -54,7 +49,6 @@ export async function renameBulk() {
     );
     if (!pattern) return;
 
-    // 미리보기 모달
     let previewHtml = `<h3>${L.title_bulk_preview || 'Preview'}</h3><div style="max-height:300px;overflow:auto;margin:10px 0;">`;
     selectedFiles.forEach((f, i) => {
         const newName = pattern

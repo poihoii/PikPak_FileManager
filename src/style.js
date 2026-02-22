@@ -22,7 +22,7 @@ export const CSS = `
     .pk-hd { height: 48px; border-bottom: 1px solid var(--pk-bd); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; background: var(--pk-bg); cursor: grab; }
     .pk-hd:active { cursor: grabbing; }
     .pk-tt { font-weight: 700; font-size: 20px; display: flex; align-items: center; gap: 10px; }
-    .pk-tb { padding: 8px 16px; border-bottom: 1px solid var(--pk-bd); display: flex; gap: 8px; align-items: center; background: var(--pk-bg); height: 40px; overflow-x: auto; scrollbar-width: none; }
+    .pk-tb { padding: 8px 16px; border-bottom: 1px solid var(--pk-bd); display: flex; gap: 8px; align-items: center; background: var(--pk-bg); min-height: 48px; flex-wrap: wrap; }
 
     .pk-btn { height: 32px; padding: 0 12px; border-radius: 4px; border: 1px solid transparent; background: transparent; color: var(--pk-fg); cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 6px; transition: background 0.1s; position: relative; font-weight: 500; white-space: nowrap; flex-shrink: 0; }
     .pk-btn:hover:not(:disabled) { background: var(--pk-btn-hov); }
@@ -30,6 +30,35 @@ export const CSS = `
     .pk-btn.pri { color: var(--pk-pri); font-weight: 600; }
     .pk-btn svg { width: 16px; height: 16px; flex-shrink: 0; display: block; vertical-align: middle; }
     .pk-btn span { white-space: nowrap; transition: opacity 0.2s; }
+
+    /* Custom CSS Tooltips - uses data-tip to avoid native title double-display */
+    [data-tip] { position: relative; }
+    [data-tip]::after {
+        content: attr(data-tip);
+        position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%) translateY(4px);
+        background: #1a1a1a; color: #f5f5f5; padding: 5px 10px; border-radius: 4px; font-size: 11px; white-space: nowrap;
+        pointer-events: none; opacity: 0; transition: opacity 0.15s ease, transform 0.15s ease; z-index: 99999;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3); border: 1px solid #333;
+        font-weight: 400; letter-spacing: 0.2px;
+    }
+    [data-tip]::before {
+        content: ''; position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%);
+        border: 5px solid transparent; border-top-color: #1a1a1a;
+        pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 99999;
+    }
+    [data-tip]:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); }
+    [data-tip]:hover::before { opacity: 1; }
+    /* Edge-safe: left-aligned tooltip (near left edge) */
+    [data-tip].tip-r::after { left: 0 !important; right: auto !important; transform: translateX(0) translateY(4px) !important; }
+    [data-tip].tip-r:hover::after { transform: translateX(0) translateY(0) !important; }
+    [data-tip].tip-r::before { left: 12px !important; right: auto !important; transform: translateX(0) !important; }
+    /* Edge-safe: right-aligned tooltip (near right edge) */
+    [data-tip].tip-l::after { left: auto !important; right: 0 !important; transform: translateX(0) translateY(4px) !important; }
+    [data-tip].tip-l:hover::after { transform: translateX(0) translateY(0) !important; }
+    [data-tip].tip-l::before { left: auto !important; right: 12px !important; transform: translateX(0) !important; }
+    /* Show tooltip below (for top-edge elements like player header) */
+    [data-tip].tip-down::after { bottom: auto !important; top: calc(100% + 8px) !important; }
+    [data-tip].tip-down::before { bottom: auto !important; top: calc(100% + 4px) !important; border-top-color: transparent !important; border-bottom-color: #1a1a1a !important; }
 
     @media (max-width: 900px) {
         .pk-btn span, .pk-dup-lbl { display: none !important; }
@@ -43,14 +72,21 @@ export const CSS = `
     @media (max-width: 1480px) { .pk-lang-ja #pk-rename span, .pk-lang-ja #pk-bulkrename span { display: none; } }
     @media (max-width: 1370px) { .pk-lang-zh #pk-rename span, .pk-lang-zh #pk-bulkrename span { display: none; } }
 
-    .pk-search { position: relative; display: flex; align-items: center; margin-right: 10px; }
-    .pk-search input { 
-        height: 32px; padding: 0 10px 0 32px; border: 1px solid var(--pk-bd); 
-        border-radius: 4px; background: var(--pk-bg); color: var(--pk-fg); 
-        font-size: 13px; width: 180px; transition: width 0.2s, border-color 0.2s; 
-    }
-    .pk-search input:focus { width: 260px; border-color: var(--pk-pri); outline: none; }
+    .pk-search { position: relative; display: flex; align-items: center; margin-right: 10px; border: 1px solid var(--pk-bd); border-radius: 4px; background: var(--pk-bg); transition: border-color 0.2s; }
+    .pk-search:focus-within { border-color: var(--pk-pri); }
+    .pk-search input { height: 32px; padding: 0 10px 0 32px; border: none; background: transparent; color: var(--pk-fg); font-size: 13px; width: 140px; transition: width 0.2s; outline: none; }
+    .pk-search input:focus { width: 220px; }
     .pk-search svg { position: absolute; left: 10px; width: 14px; height: 14px; color: #888; pointer-events: none; }
+    .pk-filter-icon { margin-right: 6px; padding: 4px; cursor: pointer; border-radius: 4px; display: flex; align-items: center; color: var(--pk-fg); transition: background 0.2s; }
+    .pk-filter-icon:hover { background: var(--pk-btn-hov); }
+    .pk-filter-icon svg { position: static; width: 16px; height: 16px; color: currentColor; }
+
+    .pk-zoom-slider { -webkit-appearance: none; appearance: none; background: transparent; cursor: pointer; height: 2px; }
+    .pk-zoom-slider::-webkit-slider-runnable-track { width: 100%; height: 4px; background: var(--pk-bd); border-radius: 2px; transition: background 0.2s; }
+    .pk-zoom-slider:hover::-webkit-slider-runnable-track { background: #b0b0b0; }
+    .pk-zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--pk-pri); cursor: pointer; margin-top: -4px; transition: transform 0.1s; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+    .pk-zoom-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+    .pk-zoom-slider:active::-webkit-slider-thumb { transform: scale(0.9); }
 
     .pk-dup-toolbar { display:none; align-items:center; gap:4px; padding:0 8px; height:100%; margin-left:8px; overflow-x: auto; scrollbar-width: none; background: transparent; border: none; }
     .pk-dup-lbl { font-weight: 500; color: var(--pk-fg); font-size: 13px; margin-right: 6px; opacity: 0.8; white-space: nowrap; flex-shrink: 0; }
@@ -92,22 +128,9 @@ export const CSS = `
     .pk-row:hover { background: var(--pk-hl); }
     .pk-row.sel { background: var(--pk-sel-bg); border-color: transparent; }
     
-    .pk-name { 
-        display: flex; 
-        align-items: center; 
-        overflow: hidden; 
-        min-width: 0; 
-    } 
-    .pk-name svg { 
-        flex-shrink: 0; 
-        margin-right: 8px; 
-    } 
-    .pk-name span { 
-        overflow: hidden; 
-        text-overflow: ellipsis; 
-        white-space: nowrap; 
-        flex: 1; 
-    }
+    .pk-name { display: flex; align-items: center; overflow: hidden; min-width: 0; } 
+    .pk-name svg { flex-shrink: 0; margin-right: 8px; } 
+    .pk-name span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
 
     .pk-group-hd { display: flex; background: var(--pk-gh); color: var(--pk-gh-fg); font-weight: bold; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--pk-bd); border-top: 1px solid var(--pk-bd); margin-top: -1px; min-height: 32px; }
     .pk-group-hd .pk-tag { margin-left: auto; background: #666; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; border: 1px solid #555; }
@@ -177,7 +200,8 @@ export const CSS = `
     @media (prefers-color-scheme: dark) { .pk-card-thumb { background: #333; } }
 
     .pk-card-thumb img { width: 100%; height: 100%; object-fit: cover; }
-    .pk-card-thumb svg { width: 48px; height: 48px; opacity: 0.7; }
+    .pk-card-thumb svg { width: 35%; max-width: 90px; height: auto; opacity: 0.35; transition: opacity 0.2s, transform 0.2s ease-out; }
+    .pk-card:hover .pk-card-thumb svg { opacity: 0.7; transform: scale(1.1); }
     
     .pk-card-name { 
         font-size: 12px; text-align: center; width: 100%; 

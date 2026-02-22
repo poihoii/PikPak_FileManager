@@ -1,5 +1,3 @@
-// src/core/state.js
-// S 객체 호환 속성명을 사용하는 AppState 싱글톤
 const _state = {
     path: [{ id: '', name: '🏠 Home' }],
     history: [], forward: [],

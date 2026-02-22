@@ -1,5 +1,3 @@
-// src/ui/sidebar.js
-// 폴더 트리 사이드바 — Lazy Loading, 드래그앤드롭 타겟
 import { CONF } from '../config';
 import { apiList } from '../api';
 
@@ -8,13 +6,6 @@ let _onNavigate = null;
 let _onDrop = null;
 let _currentFolderId = '';
 
-/**
- * 사이드바 초기화
- * @param {HTMLElement} container  #pk-sidebar 요소
- * @param {Object} L              로케일 문자열
- * @param {Function} onNavigate   (folderId, folderName) => void
- * @param {Function} onDrop       (fileIds, targetFolderId) => Promise<void>
- */
 export function initSidebar(container, L, onNavigate, onDrop) {
     _L = L;
     _onNavigate = onNavigate;
@@ -28,17 +19,12 @@ export function initSidebar(container, L, onNavigate, onDrop) {
     `;
 
     const rootUl = container.querySelector('.pk-tree-root');
-    // 루트(My Drive) 노드 추가
     const rootNode = _createNode('', L.sidebar_home, true);
     rootUl.appendChild(rootNode);
 
-    // 루트를 즉시 펼침
     _toggleNode(rootNode, true);
 }
 
-/**
- * 현재 폴더 ID를 업데이트하여 사이드바에서 하이라이트
- */
 export function highlightFolder(folderId) {
     _currentFolderId = folderId;
     const tree = document.querySelector('#pk-sb-tree');
@@ -48,9 +34,6 @@ export function highlightFolder(folderId) {
     });
 }
 
-/**
- * 특정 폴더의 캐시를 날리고 필요하다면 다시 로드하게 함. (드래그앤드롭 등으로 갱신 필요 시)
- */
 export function invalidateFolder(folderId) {
     const tree = document.querySelector('#pk-sb-tree');
     if (!tree) return;
@@ -60,12 +43,11 @@ export function invalidateFolder(folderId) {
         delete li.dataset.loaded;
         const childUl = li.querySelector(':scope > .pk-tree-children');
         if (childUl && !childUl.hidden) {
-            _toggleNode(li, true); // 상태가 열려있으므로 다시 로드하도록 호출
+            _toggleNode(li, true); 
         }
     }
 }
 
-// ── 내부 함수 ──
 
 function _createNode(folderId, name, isRoot = false) {
     const li = document.createElement('li');
@@ -98,20 +80,17 @@ function _createNode(folderId, name, isRoot = false) {
     childUl.hidden = true;
     li.appendChild(childUl);
 
-    // 클릭: 폴더 이동 + 토글
     row.addEventListener('click', (e) => {
         e.stopPropagation();
         if (_onNavigate) _onNavigate(folderId, name);
         _toggleNode(li);
     });
 
-    // 화살표 클릭: 토글만 (이동 안 함)
     arrow.addEventListener('click', (e) => {
         e.stopPropagation();
         _toggleNode(li);
     });
 
-    // 드래그앤드롭 타겟
     _addDropTarget(row, folderId);
 
     return li;
@@ -125,7 +104,6 @@ function _addDropTarget(rowEl, folderId) {
         e.dataTransfer.dropEffect = 'move';
         rowEl.classList.add('pk-drop-over');
 
-        // 0.8초 호버 시 자동 펼침
         if (!_expandTimers.has(folderId)) {
             _expandTimers.set(folderId, setTimeout(() => {
                 const li = rowEl.closest('.pk-tree-node');
@@ -170,16 +148,14 @@ async function _toggleNode(li, forceOpen = false) {
 
     const isOpen = !childUl.hidden;
     if (isOpen && !forceOpen) {
-        // 닫기
         childUl.hidden = true;
         arrow.innerHTML = CONF.icons.chevron_right;
         li.classList.remove('expanded');
         return;
     }
 
-    if (forceOpen && isOpen) return; // 이미 열려있음
+    if (forceOpen && isOpen) return; 
 
-    // 열기: 아직 로드하지 않았으면 Lazy Load
     if (!li.dataset.loaded) {
         const folderId = li.querySelector(':scope > .pk-tree-row').dataset.folderId;
         arrow.innerHTML = `<span class="pk-tree-spin"></span>`;

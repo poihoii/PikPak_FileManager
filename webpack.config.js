@@ -1,5 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
+const TerserPlugin = require('terser-webpack-plugin');
 
 const header = `// ==UserScript==
 // @name           PikPak 파일 관리자
@@ -21,6 +22,12 @@ const header = `// ==UserScript==
 // @grant          GM_setClipboard
 // @grant          GM_setValue
 // @grant          GM_getValue
+// @grant          GM_addStyle
+// @grant          GM_getResourceText
+// @grant          GM_xmlhttpRequest
+// @require        https://cdnjs.cloudflare.com/ajax/libs/plyr/3.7.8/plyr.min.js
+// @require        https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.3.5/hls.min.js
+// @resource       plyrCSS https://cdnjs.cloudflare.com/ajax/libs/plyr/3.7.8/plyr.css
 // @run-at         document-idle
 // @license        MIT
 // ==/UserScript==
@@ -33,7 +40,20 @@ module.exports = {
         path: path.resolve(__dirname, 'user.js'),
     },
     optimization: {
-        minimize: false, // Turn off compression for user script readability (true if desired)
+        minimize: true, // Enabled minimize to strip comments via Terser
+        minimizer: [
+            new TerserPlugin({
+                terserOptions: {
+                    format: {
+                        comments: /==\/?UserScript==|@name|@namespace|@version|@description|@author|@match|@icon|@homepage|@grant|@require|@resource|@run-at|@license/i, // Remove inner comments but keep UserScript banner
+                        beautify: true,  // Keep the code readable
+                    },
+                    compress: false, // Don't minify logic
+                    mangle: false,   // Don't obfuscate
+                },
+                extractComments: false, // Prevent creating an external LICENSE.txt file
+            }),
+        ],
     },
     plugins: [
         new webpack.BannerPlugin({

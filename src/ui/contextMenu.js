@@ -1,5 +1,3 @@
-// src/ui/contextMenu.js
-// 우클릭 컨텍스트 메뉴 이벤트 연결
 
 import { UI } from './layout';
 
