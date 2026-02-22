@@ -1,5 +1,3 @@
-// src/features/flatten.js
-// 하위 폴더 구조 플래튼 (전체 파일 스캔) 기능
 
 import { ApiClient } from '../core/api';
 import { AppState } from '../core/state';

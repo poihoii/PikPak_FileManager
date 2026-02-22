@@ -1,4 +1,3 @@
-// src/index.js — 진입점 + 페이지 주입 로직
 import { openManager } from './main';
 import { gmGet, gmSet } from './utils';
 

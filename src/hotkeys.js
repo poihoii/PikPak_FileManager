@@ -1,5 +1,3 @@
-// src/hotkeys.js
-// 키보드 단축키 & 마우스 이벤트
 
 import { AppState } from './core/state';
 import { EventBus, Events } from './core/event';
@@ -21,24 +19,20 @@ export function removeHotkeys() {
 function keyHandler(e) {
     if (!_callbacks) return;
 
-    // ESC
     if (e.key === 'Escape') {
         _callbacks.onEscape?.(e);
         return;
     }
 
-    // 모달/입력에 포커스 중이면 단축키 무시
     const active = document.activeElement;
     if (active && ['INPUT', 'TEXTAREA', 'SELECT'].includes(active.tagName)) return;
 
-    // Delete
     if (e.key === 'Delete') {
         e.preventDefault();
         _callbacks.onDelete?.(e);
         return;
     }
 
-    // Ctrl 조합
     if (e.ctrlKey || e.metaKey) {
         switch (e.key.toLowerCase()) {
             case 'a':
@@ -65,21 +59,18 @@ function keyHandler(e) {
         return;
     }
 
-    // F2 이름 변경
     if (e.key === 'F2') {
         e.preventDefault();
         _callbacks.onRename?.(e);
         return;
     }
 
-    // F5 새로고침
     if (e.key === 'F5') {
         e.preventDefault();
         _callbacks.onRefresh?.(e);
         return;
     }
 
-    // Backspace 뒤로
     if (e.key === 'Backspace') {
         e.preventDefault();
         _callbacks.onBack?.(e);
@@ -88,6 +79,5 @@ function keyHandler(e) {
 }
 
 function mouseHandler(e) {
-    // 컨텍스트 메뉴 영역 밖 클릭 시 닫기
     hideCtx();
 }

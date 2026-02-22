@@ -1,12 +1,8 @@
-// src/core/api.js
-// PikPak REST API 클라이언트 단일 진입점입니다.
-// 모든 API 호출은 반드시 이 모듈을 통해야 합니다.
 
 import { sleep } from '../utils';
 
 const BASE = 'https://api-drive.mypikpak.com';
 
-// PikPak 인증 헤더 추출 (localStorage에서)
 export function getHeaders() {
     let token = '', captcha = '';
     for (let i = 0; i < localStorage.length; i++) {
@@ -26,7 +22,6 @@ export function getHeaders() {
     };
 }
 
-// 내부 fetch 래퍼
 async function request(method, path, body = null, params = {}) {
     const url = new URL(BASE + path);
     Object.entries(params).forEach(([k, v]) => {
@@ -42,7 +37,7 @@ async function request(method, path, body = null, params = {}) {
     if (!res.ok) {
         if (res.status === 429) {
             await sleep(2000);
-            return request(method, path, body, params); // 재시도
+            return request(method, path, body, params); 
         }
         const err = await res.json().catch(() => ({}));
         throw new ApiError(res.status, err.error_description || err.error?.message || res.statusText, err);
@@ -62,7 +57,6 @@ class ApiError extends Error {
 export { ApiError };
 
 export const ApiClient = {
-    // ── 파일 목록 ──────────────────────────────────────
     async listFiles(folderId = '', pageToken = null) {
         return request('GET', '/drive/v1/files', null, {
             parent_id: folderId,
@@ -73,7 +67,6 @@ export const ApiClient = {
         });
     },
 
-    // 전체 페이지 순회
     async listFilesAll(folderId = '', limit = 1000, onProgress) {
         const all = [];
         let next = null, safe = 5000;
@@ -96,14 +89,12 @@ export const ApiClient = {
         return all;
     },
 
-    // ── 파일 정보 ──────────────────────────────────────
     async getFile(id) {
         const res = await fetch(`${BASE}/drive/v1/files/${id}`, { headers: getHeaders() });
         if (!res.ok) throw new Error(`API Error ${res.status}`);
         return res.json();
     },
 
-    // ── 파일 작업 ──────────────────────────────────────
     async action(actionPath, data) {
         const method = actionPath.includes('batch') ? 'POST' : 'PATCH';
         const res = await fetch(`${BASE}/drive/v1/files${actionPath}`, {
@@ -142,7 +133,6 @@ export const ApiClient = {
         });
     },
 
-    // ── 직접 링크 ──────────────────────────────────────
     async getDownloadUrl(fileId) {
         const res = await this.getFile(fileId);
         return res.web_content_link || null;

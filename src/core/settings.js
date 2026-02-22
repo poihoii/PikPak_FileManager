@@ -1,6 +1,3 @@
-// src/core/settings.js
-// GM_setValue/GM_getValue 래퍼입니다.
-// 설정 키는 반드시 KEYS 상수에 정의 후 사용하세요.
 
 function _gmGet(key, def) {
     if (typeof GM_getValue !== 'undefined') return GM_getValue(key, def);

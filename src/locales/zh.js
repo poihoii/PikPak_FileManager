@@ -6,7 +6,7 @@ export default {
     btn_stop: "停止", tip_stop: "立即停止当前操作。",
     btn_dup: "查找重复", tip_dup: "在当前列表中查找重复的视频文件。",
 
-    status_ready: "就绪 ({n} 项)", status_scanning: "扫描中... {n} (当前: {f})",
+    status_ready: "就绪 ({n} 项)", status_scanning: "🔍 已找到: {n} (正在扫描: {s}...)\n📂 正在扫描 \"{f}\" 文件夹...",
     msg_no_files: "没有项目。",
     warn_del: "确定要删除选中的 {n} 项吗？",
 
@@ -16,7 +16,7 @@ export default {
     btn_ext: "外部播放", tip_ext: "使用 PotPlayer 或 VLC 等外部播放器播放视频（需要设置）。",
 
     loading: "加载中...", loading_detail: "正在获取文件列表...",
-    loading_fetch: "获取中... ({n})", loading_dup: "分析重复项... ({p}%)",
+    loading_fetch: "🔍 已找到: {n} (正在仔细查找...)", loading_dup: "分析重复项... ({p}%)",
     sel_count: "选中 {n} 项",
     tag_hash: "哈希匹配", tag_name: "名称匹配", tag_sim: "相似 (时长+名称)",
     lbl_dup_tool: "选择删除对象:",
@@ -37,7 +37,7 @@ export default {
     btn_bulkrename: "批量重命名", tip_bulkrename: "根据规则批量修改多个文件名 (F2)",
     btn_settings: "设置", tip_settings: "配置语言、外部播放器和 Aria2 连接 (Alt+S)",
 
-    ctx_open: "打开 / 播放", ctx_rename: "重命名", ctx_copy: "复制", ctx_cut: "剪切", ctx_del: "删除", ctx_down: "下载",
+    ctx_open: "打开 / 播放", ctx_rename: "重命名", ctx_copy: "复制", ctx_cut: "剪切", ctx_del: "删除", ctx_down: "下载", ctx_ext_play: "用外部播放器打开",
     msg_newfolder_prompt: "输入新文件夹名称:",
     msg_rename_prompt: "输入新名称:",
     msg_no_selection: "请先选择项目。",
@@ -69,8 +69,9 @@ export default {
     modal_settings_title: "设置", label_lang: "语言 (Language)", label_player: "外部播放器", label_aria2_url: "Aria2 地址", label_aria2_token: "Token",
 
     placeholder_search: "搜索文件...",
-    tip_search: "在当前列表中筛选文件。",
-    btn_help: "帮助", tip_help: "显示快捷键和使用说明。",
+    tip_search: "在当前列表中查找。",
+    tip_search_global: "输入搜索词并按 Enter 执行全局搜索。",
+    btn_help: "帮助", tip_help: "查看快捷键和功能说明。",
     modal_help_title: "使用说明",
     help_desc: `
 <div style="font-size:13px; line-height:1.6; color:var(--pk-fg);">
@@ -146,7 +147,7 @@ export default {
     sort_ext: "扩展名",
 
     btn_sidebar: "侧边栏", tip_sidebar: "切换文件夹树侧边栏。",
-    sidebar_title: "文件夹",
+    sidebar_title: "文件夹结构",
     sidebar_home: "我的云盘",
     sidebar_loading: "加载中...",
     sidebar_empty: "无子文件夹",
@@ -155,4 +156,13 @@ export default {
     drag_move_done: "已移动 {n} 个文件",
     drag_move_fail: "移动失败: {e}",
     drag_move_same: "不能移动到同一个文件夹。",
+
+    lbl_sub_size: "字幕大小",
+    lbl_sub_lang: "翻译语言",
+    lbl_sub_load_local: "加载本地字幕文件",
+    lbl_sub_settings: "字幕设置",
+    tip_zoom: "缩放",
+    tip_sort: "排序标准",
+    loading_searching: "正在搜索文件...",
+    lbl_root: "根目录",
 };

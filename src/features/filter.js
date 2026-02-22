@@ -1,7 +1,4 @@
-// src/features/filter.js
-// 고급 필터 기능: 파일 타입, 크기, 날짜, 이름으로 필터링
 
-// 파일 타입 → 확장자 매핑
 const TYPE_MAP = {
     video: ['mp4', 'mkv', 'avi', 'mov', 'wmv', 'flv', 'ts', 'm2ts', 'webm', 'rmvb', 'm4v'],
     image: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'tiff', 'heic'],
@@ -12,19 +9,16 @@ const TYPE_MAP = {
 };
 
 export const DEFAULT_FILTER = {
-    types: [],         // 빈 배열 = 모든 타입
-    sizeMin: null,     // bytes (null = 제한 없음)
+    types: [],         
+    sizeMin: null,     
     sizeMax: null,
-    dateFrom: '',      // ISO date string (yyyy-mm-dd)
+    dateFrom: '',      
     dateTo: '',
     nameInclude: '',
     nameExclude: '',
     useRegex: false,
 };
 
-/**
- * 필터 활성 개수 계산
- */
 export function countActiveFilters(filter) {
     let n = 0;
     if (filter.types.length > 0) n++;
@@ -34,30 +28,22 @@ export function countActiveFilters(filter) {
     return n;
 }
 
-/**
- * 파일 배열에 필터 적용
- */
 export function applyFilter(files, filter) {
     if (!filter) return files;
     return files.filter(f => {
-        // 폴더는 항상 통과
         if (f.kind === 'drive#folder') return true;
-        // 헤더 행도 통과
         if (f.isHeader) return true;
 
-        // 1. 타입 필터
         if (filter.types.length > 0) {
             const ext = (f.name || '').split('.').pop().toLowerCase();
             const matched = filter.types.some(t => TYPE_MAP[t]?.includes(ext));
             if (!matched) return false;
         }
 
-        // 2. 크기 필터
         const size = parseInt(f.size || 0);
         if (filter.sizeMin !== null && size < filter.sizeMin) return false;
         if (filter.sizeMax !== null && size > filter.sizeMax) return false;
 
-        // 3. 날짜 필터
         if (filter.dateFrom) {
             const t = new Date(f.created_time || f.modified_time).getTime();
             if (t < new Date(filter.dateFrom).getTime()) return false;
@@ -67,13 +53,12 @@ export function applyFilter(files, filter) {
             if (t > new Date(filter.dateTo).getTime() + 86400000) return false;
         }
 
-        // 4. 이름 필터
         const name = (f.name || '').toLowerCase();
         if (filter.nameInclude) {
             if (filter.useRegex) {
                 try {
                     if (!new RegExp(filter.nameInclude, 'i').test(f.name)) return false;
-                } catch { /* 잘못된 정규식 무시 */ }
+                } catch {  }
             } else {
                 if (!name.includes(filter.nameInclude.toLowerCase())) return false;
             }
@@ -82,7 +67,7 @@ export function applyFilter(files, filter) {
             if (filter.useRegex) {
                 try {
                     if (new RegExp(filter.nameExclude, 'i').test(f.name)) return false;
-                } catch { /* 잘못된 정규식 무시 */ }
+                } catch {  }
             } else {
                 if (name.includes(filter.nameExclude.toLowerCase())) return false;
             }
@@ -92,9 +77,6 @@ export function applyFilter(files, filter) {
     });
 }
 
-/**
- * 필터 패널 HTML 생성
- */
 export function createFilterPanelHTML(L, currentFilter) {
     const f = currentFilter || DEFAULT_FILTER;
     const typeButtons = ['video', 'image', 'subtitle', 'archive', 'audio', 'document'].map(t => {
@@ -143,9 +125,6 @@ export function createFilterPanelHTML(L, currentFilter) {
     </div>`;
 }
 
-/**
- * 필터 패널에서 현재 값 읽기
- */
 export function readFilterFromPanel(panelEl) {
     const types = [];
     panelEl.querySelectorAll('.pk-filter-chip.active').forEach(ch => {

@@ -1,16 +1,12 @@
-// src/ui/fileList.js
-// 파일 목록 렌더러 (list/grid)
 import { CONF } from '../config';
 import { esc, fmtSize, fmtDate, fmtDur } from '../utils';
 import { AppState } from '../core/state';
 import { UI } from './layout';
 import { getStrings } from '../languages';
 
-// 핸들러 저장소
 let _h = null;
 export function setHandlers(h) { _h = h; }
 
-// Grid 계산값 캐시
 let _gridCache = { items: [], cols: 1, cardW: 140, cardH: 200, gap: 10 };
 
 export function getIcon(item) {
@@ -98,8 +94,8 @@ export function renderGrid() {
     const gap = 10, padding = 10, containerW = UI.vp.clientWidth - (padding * 2);
     const cols = Math.floor((containerW + gap) / (zoom + gap)) || 1;
     const cardW = (containerW - (cols - 1) * gap) / cols;
-    const thumbH = Math.floor(cardW * 0.75); // 4:3 aspect ratio
-    const cardH = thumbH + 56; // 56px for padding and text
+    const thumbH = Math.floor(cardW * 0.75); 
+    const cardH = thumbH + 74; 
 
     UI.in.style.setProperty('--pk-thumb-h', `${thumbH}px`);
 

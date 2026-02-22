@@ -1,5 +1,3 @@
-// src/core/toast.js
-// 토스트 알림 시스템입니다.
 
 const CONTAINER_ID = 'pfm-toast-container';
 
@@ -42,7 +40,6 @@ export const Toast = {
     warning: (msg, dur) => Toast.show(msg, 'warning', dur),
     info: (msg, dur) => Toast.show(msg, 'info', dur),
 
-    // 백그라운드 작업용 — 진행률 표시
     progress(msg) {
         const container = ensureContainer();
         const el = document.createElement('div');
@@ -79,7 +76,6 @@ export const Toast = {
     },
 };
 
-// Toast CSS (style.js에서 병합)
 export const TOAST_CSS = `
 #pfm-toast-container {
     position: fixed; bottom: 24px; right: 24px;

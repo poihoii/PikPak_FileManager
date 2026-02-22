@@ -6,7 +6,7 @@ export default {
     btn_stop: "停止", tip_stop: "現在の作業（検索、収集など）を即座に停止します。",
     btn_dup: "重複検索", tip_dup: "現在のリストから重複した動画ファイルを検索して整理します。",
 
-    status_ready: "準備完了 ({n} 項目)", status_scanning: "収集中... {n} (現在: {f})",
+    status_ready: "準備完了 ({n} 項目)", status_scanning: "🔍 発見: {n} (全体 {s} をスキャン中...)\n📂 現在 \"{f}\" フォルダを探索中...",
     msg_no_files: "項目がありません。",
     warn_del: "選択した {n} 項目をゴミ箱に移動しますか？",
 
@@ -16,7 +16,7 @@ export default {
     btn_ext: "外部再生", tip_ext: "PotPlayerやVLCなどの外部プレーヤーで再生します（設定が必要）。",
 
     loading: "読み込み中...", loading_detail: "ファイルリストを取得中...",
-    loading_fetch: "ファイル取得中... ({n})", loading_dup: "重複分析中... ({p}%)",
+    loading_fetch: "🔍 発見: {n} (慎重に探索中...)", loading_dup: "重複分析中... ({p}%)",
     sel_count: "{n} 選択済み",
     tag_hash: "Hash一致", tag_name: "名前一致", tag_sim: "類似 (時間+名前)",
     lbl_dup_tool: "削除対象選択:",
@@ -37,7 +37,7 @@ export default {
     btn_bulkrename: "一括変更", tip_bulkrename: "複数のファイル名を規則に従って一括変更します (F2)",
     btn_settings: "設定", tip_settings: "言語、外部プレーヤー、Aria2連携などを設定します (Alt+S)",
 
-    ctx_open: "開く / 再生", ctx_rename: "名前変更", ctx_copy: "コピー", ctx_cut: "切り取り", ctx_del: "削除", ctx_down: "ダウンロード",
+    ctx_open: "開く / 再生", ctx_rename: "名前変更", ctx_copy: "コピー", ctx_cut: "切り取り", ctx_del: "削除", ctx_down: "ダウンロード", ctx_ext_play: "外部プレーヤーで開く",
     msg_newfolder_prompt: "フォルダ名を入力:",
     msg_rename_prompt: "新しい名前を入力:",
     msg_no_selection: "先に項目を選択してください。",
@@ -69,38 +69,46 @@ export default {
     modal_settings_title: "設定", label_lang: "言語 (Language)", label_player: "外部プレーヤー", label_aria2_url: "Aria2 URL", label_aria2_token: "トークン",
 
     placeholder_search: "検索...",
-    tip_search: "現在のリストからファイルを検索します。",
+    tip_search: "現在のリストから検索します。",
+    tip_search_global: "キーワードを入力して Enter を押すと、クラウド全体から検索します。",
     btn_help: "ヘルプ", tip_help: "ショートカットと使い方を表示します。",
     modal_help_title: "ヘルプと使い方",
     help_desc: `
 <div style="font-size:13px; line-height:1.6; color:var(--pk-fg);">
     <div style="margin-bottom:15px;">
-        <b style="font-size:14px; color:var(--pk-pri);">🔍 検索 (Search)</b><br>
-        - 現在のリストに表示されているファイルを即座にフィルタリングします。<br>
-        - 「構造平坦化」機能と併用することで、ドライブ全体からファイルを検索できます。<br>
+        <b style="font-size:14px; color:var(--pk-pri);">🔍 強力な検索 (Search)</b><br>
+        - <b>リスト抽出</b>: 文字を入力すると即座に現在のリストを絞り込みます。<br>
+        - <b>全体検索</b>: キーワードを入力して <b>Enter</b> を押すと、クラウド内のすべてのファイルを検索します！
     </div>
     
     <div style="margin-bottom:15px;">
         <b style="font-size:14px; color:var(--pk-pri);">📂 構造平坦化 (Flatten)</b><br>
-        - サブフォルダに含まれるすべてのファイルを検索し、一つのリストにまとめます。<br>
-        - 作業が終わったら「更新 (F5)」を押して元のフォルダ構造に戻ってください。<br>
+        - サブフォルダ内のファイルをすべて取得し、一つのリストにまとめて表示します。<br>
+        - 作業終了後は「更新 (F5)」を押して元のフォルダ構造に戻してください。
     </div>
 
-    <div style="margin-bottom:20px;">
+    <div style="margin-bottom:15px;">
         <b style="font-size:14px; color:var(--pk-pri);">🧹 重複整理 (Deduplication)</b><br>
-        - <b>サイズ</b>: 重複ファイルの中で、容量が最も大きい（または小さい）ファイルを残して選択します。<br>
-        - <b>日付</b>: アップロード日時が最も古い（または新しい）ファイルを残して選択します。<br>
+        - 名前、サイズ、時間を比較して同じファイルを見つけ出します。<br>
+        - サイズや日付で重複ファイルを自動選択し、一括削除して容量を節約できます。
+    </div>
+
+    <div style="margin-bottom:15px;">
+        <b style="font-size:14px; color:var(--pk-pri);">🖱️ 右クリックメニュー (Context Menu)</b><br>
+        - ファイルやフォルダを<b>右クリック</b>すると、クイックメニューが表示されます。<br>
+        - ダウンロード、名前変更、切り取り、外部プレーヤー再生などが可能です。
     </div>
     
     <div>
-        <b style="font-size:14px; color:var(--pk-pri);">⌨️ ショートカットキー</b>
+        <b style="font-size:14px; color:var(--pk-pri);">⌨️ 便利なしショートカット</b>
         <table class="pk-help-table">
             <tr><td width="100"><b>F2</b></td><td>名前変更 / 一括変更</td></tr>
-            <tr><td><b>F5</b></td><td>リスト更新</td></tr>
+            <tr><td><b>F5</b></td><td>リスト更新 (表示リセット)</td></tr>
             <tr><td><b>F8</b></td><td>新規フォルダ作成</td></tr>
-            <tr><td><b>Del</b></td><td>選択項目を削除 (ゴミ箱)</td></tr>
+            <tr><td><b>Del</b></td><td>選択項目をゴミ箱に移動</td></tr>
             <tr><td><b>Ctrl+A</b></td><td>全選択</td></tr>
-            <tr><td><b>Ctrl+C/V</b></td><td>コピー / 貼り付け</td></tr>
+            <tr><td><b>Ctrl+C / X</b></td><td>コピー / 切り取り</td></tr>
+            <tr><td><b>Ctrl+V</b></td><td>貼り付け</td></tr>
             <tr><td><b>Alt+S</b></td><td>設定 (Settings)</td></tr>
             <tr><td><b>Esc</b></td><td>選択解除 / 閉じる</td></tr>
         </table>
@@ -146,7 +154,7 @@ export default {
     sort_ext: "拡張子",
 
     btn_sidebar: "サイドバー", tip_sidebar: "フォルダツリーサイドバーを切り替えます。",
-    sidebar_title: "フォルダ",
+    sidebar_title: "フォルダ構造",
     sidebar_home: "マイドライブ",
     sidebar_loading: "読み込み中...",
     sidebar_empty: "サブフォルダなし",
@@ -155,4 +163,13 @@ export default {
     drag_move_done: "{n}件のファイルを移動しました",
     drag_move_fail: "移動失敗: {e}",
     drag_move_same: "同じフォルダには移動できません。",
+
+    lbl_sub_size: "字幕サイズ",
+    lbl_sub_lang: "翻訳言語",
+    lbl_sub_load_local: "ローカル字幕を読み込む",
+    lbl_sub_settings: "字幕設定",
+    tip_zoom: "ズーム",
+    tip_sort: "並び替え基準",
+    loading_searching: "ファイルを検索中...",
+    lbl_root: "ルート",
 };

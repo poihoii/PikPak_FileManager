@@ -1,5 +1,3 @@
-// src/features/duplicate.js
-// 중복 파일 검출 기능
 
 import { AppState } from '../core/state';
 import { EventBus, Events } from '../core/event';
@@ -27,12 +25,10 @@ export function runDuplicate(L) {
     for (const f of items) {
         if (f.kind === 'drive#folder' || f.isHeader) continue;
 
-        // 이름 기반 그룹
         const n = f.name.toLowerCase().trim();
         if (!nameMap.has(n)) nameMap.set(n, []);
         nameMap.get(n).push(f);
 
-        // 크기 기반 그룹
         if (f.size && parseInt(f.size, 10) > 0) {
             const sz = f.size.toString();
             if (!sizeMap.has(sz)) sizeMap.set(sz, []);
@@ -40,7 +36,6 @@ export function runDuplicate(L) {
         }
     }
 
-    // 동일 이름 + 동일 크기 = 중복
     let groupIdx = 0;
     const allDups = new Set();
 
@@ -77,7 +72,6 @@ export function runDuplicate(L) {
         dupGroups,
     });
 
-    // 디스플레이 구성: 중복 그룹 상단, 비중복 하단
     const dupItems = [];
     const nonDupItems = [];
 
@@ -106,7 +100,6 @@ export function runDuplicate(L) {
     }
 }
 
-// 크기 기준 전략 토글 (small/big)
 export function toggleSizeStrategy(L) {
     const current = AppState.get('dupSizeStrategy');
     const next = current === 'small' ? 'big' : 'small';
@@ -115,7 +108,6 @@ export function toggleSizeStrategy(L) {
     UI.condSize.textContent = `(${label})`;
 }
 
-// 날짜 기준 전략 토글 (old/new)
 export function toggleDateStrategy(L) {
     const current = AppState.get('dupDateStrategy');
     const next = current === 'old' ? 'new' : 'old';
@@ -124,7 +116,6 @@ export function toggleDateStrategy(L) {
     UI.condDate.textContent = `(${label})`;
 }
 
-// 중복 그룹에서 기준에 따라 자동 선택
 export function autoSelectDuplicates() {
     const dupGroups = AppState.get('dupGroups');
     const sizeStr = AppState.get('dupSizeStrategy');
@@ -135,14 +126,12 @@ export function autoSelectDuplicates() {
         if (group.length < 2) return;
         const sorted = [...group];
 
-        // 사이즈 기준으로 정렬 후 하나 남기고 선택
         if (sizeStr === 'small') {
             sorted.sort((a, b) => parseInt(a.size || 0, 10) - parseInt(b.size || 0, 10));
         } else {
             sorted.sort((a, b) => parseInt(b.size || 0, 10) - parseInt(a.size || 0, 10));
         }
 
-        // 첫 번째(보존) 제외 나머지 선택
         for (let i = 1; i < sorted.length; i++) {
             sel.add(sorted[i].id);
         }

@@ -1,5 +1,3 @@
-// src/features/download.js
-// 다운로드 관련 기능 (직접 다운로드, IDM, Aria2, 외부 플레이어, 링크 복사)
 
 import { ApiClient, getHeaders } from '../core/api';
 import { AppState } from '../core/state';
@@ -14,7 +12,6 @@ export function initDownload(L) {
     _L = L;
 }
 
-// 선택된 파일들의 직접 링크를 가져옴
 export async function getLinks(L) {
     L = L || _L;
     const selectedIds = AppState.get('selectedIds');
@@ -51,7 +48,6 @@ export async function getLinks(L) {
     return links;
 }
 
-// 직접 다운로드
 export async function downloadDirect(L) {
     L = L || _L;
     const links = await getLinks(L);
@@ -70,7 +66,6 @@ export async function downloadDirect(L) {
     showToast(`${links.length} ${L.msg_down_start || 'downloads started'}`);
 }
 
-// IDM 내보내기
 export async function exportIdm(L) {
     L = L || _L;
     const links = await getLinks(L);
@@ -87,7 +82,6 @@ export async function exportIdm(L) {
     showToast(`${L.msg_idm_ok || 'IDM file exported'}: ${links.length} files`);
 }
 
-// Aria2 전송
 export async function sendAria2(L) {
     L = L || _L;
     const aria2Url = Settings.get(KEYS.ARIA2_URL);
@@ -129,7 +123,6 @@ export async function sendAria2(L) {
     showToast(`Aria2: ${ok} ${L.msg_ok || 'ok'}, ${fail} ${L.msg_fail || 'fail'}`);
 }
 
-// 외부 플레이어 실행
 export async function playExternal(L) {
     L = L || _L;
     const selectedIds = AppState.get('selectedIds');
@@ -166,7 +159,6 @@ export async function playExternal(L) {
     }
 }
 
-// 직접 링크 복사
 export async function copyLinks(L) {
     L = L || _L;
     const links = await getLinks(L);
@@ -177,7 +169,6 @@ export async function copyLinks(L) {
         await navigator.clipboard.writeText(text);
         showToast(`${links.length} ${L.msg_link_copied || 'links copied'}`);
     } catch {
-        // fallback
         const ta = document.createElement('textarea');
         ta.value = text;
         document.body.appendChild(ta);

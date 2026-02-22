@@ -1,5 +1,3 @@
-// src/features/player.js
-// 인라인 비디오 플레이어
 
 import { ApiClient } from '../core/api';
 import { AppState } from '../core/state';
@@ -30,7 +28,6 @@ export async function playVideo(item) {
             </div>
         `;
 
-        // ESC 키로 닫기
         const handler = (e) => {
             if (e.key === 'Escape') {
                 e.stopPropagation();
